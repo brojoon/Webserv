@@ -22,7 +22,7 @@ Webserver *Webserver::getInstance()
 
 bool Webserver::parsing(char *str)
 {
-	str++;
+	--str;
 	return true;
 
 }
