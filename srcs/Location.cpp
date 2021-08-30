@@ -10,9 +10,9 @@ Location::~Location()
 
 }
 
-const std::string &Location::getLocationName()
+const std::string &Location::getLocationPath()
 {
-	return this->location_name;
+	return this->location_path;
 }
 
 std::vector<std::string> &Location::getAllowMethods()
@@ -25,9 +25,14 @@ bool Location::getAutoIndex()
 	return this->auto_index;
 }
 
-void Location::setLocationName(std::string &Location_name)
+std::string Location::getRoot()
 {
-	this->Location_name = Location_name;
+	return this->root;
+}
+
+void Location::setLocationName(std::string &Location_path)
+{
+	this->Location_path = Location_path;
 }
 
 void Location::setAllowMethods(std::string &allow_methods)
@@ -38,5 +43,10 @@ void Location::setAllowMethods(std::string &allow_methods)
 void setAutoIndex(bool &autoindex)
 {
 	this->auto_index = autoindex;
+}
+
+void setRoot(std::string root)
+{
+	this->root = root;
 }
 
