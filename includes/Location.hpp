@@ -26,4 +26,5 @@ class Location
 		void setAllowMethods(std::string &allow_methods);
 		void setAutoIndex(bool &autoindex);
 		void setRoot(std::string root);
+
 }
