@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <map>
 
-////////////////////////////////////////////////////////////////////////////
+#include "utils_for_parse.hpp"
 
 struct paresed_request_msg
 {
@@ -22,26 +22,27 @@ struct paresed_request_msg
 class parse_request_msg_and_store_and_response
 {
 	private:
+		//리퀘스트 메시지 파싱해서 _parsed_request_msg변수에 저장
 		struct paresed_request_msg _parsed_request_msg;
-		//config file에서 필요한 정보 저장 -> config담당에서 적절한 객체를 만들어 필요한 정보를 저장해 둬야할듯(이 객체를 현재 클래스의 생성자 쪽에서 받는게 좋을듯)
-		std::string _status;//error_check()함수에서 초기화해줄듯
+		//'리스폰스 메시지 관련 함수들'에서 사용될 변수들
+		std::string _status;
 		std::string _abs_path;
-		//제너럴 헤더필드
-		std::string get_date();
-		std::string get_pragma();
-		std::string get_cache_control();
-		std::string get_connection();
-		std::string get_transfer_encoding();
-		std::string get_via();
-		//리퀘스트 헤더필드
-		//리스폰스 헤더필드
-		//엔터티 헤더필드
-		
+
+	private:
+		//리퀘스트 메시지 관련 함수
+		void method_check(const std::string &str);
+		void url_check(const std::string &str);
+		void http_check(const std::string &str);
+		void version_check(const std::string &str);
+		void header_field_check(const std::string &str);
+		//리스폰스 메시지 관련 함수(get_response함수에서 사용될 예정)
+		std::string get_reponse_line();
+		std::string get_header_field();
+
 	public:
 		parse_request_msg_and_store_and_response(std::string request_msg);
-		void error_check();//config file 참조해서 error_chceck한다. rfc에 맞지않는 부분이 있는지도 체크 -> 에러발생시 (throw 예외)
+		void error_check(); //config file 참조해서 error_chceck한다. rfc에 맞지않는 부분이 있는지도 체크 -> 에러발생시 (throw 예외)
 		std::string get_response();
-
 };
 
 #endif

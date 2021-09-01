@@ -1,44 +1,5 @@
 #include "parse_request_msg_and_store_and_response.hpp"
 
-std::string get_next_line(const std::string &src)
-{
-	static int end = 0;
-	const int _size = src.size();
-	int start = ((end == 0) ? 0 : end + 1);
-	std::string ret;
-
-	if (end == std::string::npos)
-	{
-		end = 0;
-		ret = "\n\n";
-		return ret;
-	}
-	end = src.find_first_of("\n", start);
-	if (end == std::string::npos)//last line
-		ret = src.substr(start, _size - start);
-	else
-		ret = src.substr(start, (end-1) -  start + 1);//개행문자 빼고 substr
-	return ret;
-}
-
-std::string ft_strtok(std::string &src, std::string deli)//인자로 들어온 src를 참조만 하는게 아니라, 편집도 함
-{
-	int start = 0;
-	int end = src.find_first_of(deli);
-	std::string ret;
-	if (end == std::string::npos)
-	{
-		ret = src;
-		src.clear();
-	}
-	else
-	{
-		ret = src.substr(start, (end-1) -  start + 1);
-		end = src.find_first_not_of(deli, end);
-		src = src.substr(end, src.size() - end);
-	}
-	return ret;//빈문자열이 return 될때가 종료조건
-}
 
 parse_request_msg_and_store_and_response::parse_request_msg_and_store_and_response(std::string request_msg)
 {
@@ -66,13 +27,13 @@ void parse_request_msg_and_store_and_response::error_check()//error_check함수�
 	std::string first_line = _parsed_request_msg.first_line;
 	std::string temp;
 	temp = ft_strtok(first_line, " ");
-	//method_check();
+	//method_check(temp);
 	temp = ft_strtok(first_line, " ");
-	//url_check();
+	//url_check(temp);
 	temp = ft_strtok(first_line, " ");
- 	//http_check();
+ 	//http_check(temp);
 	temp = ft_strtok(first_line, " ");
-	//version_check();
+	//version_check(temp);
 
 	std::map<std::string, std::string> header_field = _parsed_request_msg.header_field;
 	//header_field_check();
@@ -96,4 +57,27 @@ std::string parse_request_msg_and_store_and_response::get_response()
 	}
 	close(fd);
 	return ret;
+}
+
+void parse_request_msg_and_store_and_response::method_check(const std::string &str)
+{
+	if (str == "GET" || str == "POST" || str == "DELETE")
+		return ;
+	else
+		throw std::runtime_error("method error 405"); // 예외번호가 더 있는데 일단 405만
+}
+
+void parse_request_msg_and_store_and_response::url_check(const std::string &str)
+{
+
+}
+
+void parse_request_msg_and_store_and_response::http_check(const std::string &str)
+{
+
+}
+
+void parse_request_msg_and_store_and_response::version_check(const std::string &str)
+{
+
 }
