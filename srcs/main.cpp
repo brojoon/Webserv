@@ -8,7 +8,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	
-	if (WEBSERVER->parsing(argv[1]) == 0)
+	if (WEBSERVER->parsingConfig(argv[1]) == false)
 		return 1;
+
 	return 0;
 }

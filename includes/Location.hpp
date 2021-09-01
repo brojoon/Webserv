@@ -3,6 +3,7 @@
 
 #include <map>
 #include <vector>
+#include <string>
 
 
 class Location
@@ -17,14 +18,15 @@ class Location
 		Location();
 		virtual ~Location();
 
-		const std::string &getLocationPath() const ;
-		std::vector<std::string> &getAllowMethods() const;
-		bool getAutoIndex() const;
-		std::string getRoot() const;
+		const std::string &getLocationPath() const;
+		const bool &getAutoIndex() const;
+		const std::string &getRoot() const;
+		std::vector<std::string> &getAllowMethods();
 
-		void setLocationName(std::string &Location_path);
-		void setAllowMethods(std::string &allow_methods);
-		void setAutoIndex(bool &autoindex);
-		void setRoot(std::string root);
+		void setLocationPath(std::string &Location_path);
+		void setAutoIndex(bool autoindex);
+		void setRoot(std::string &root);
 
-}
+};
+
+#endif

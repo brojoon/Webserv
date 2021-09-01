@@ -11,17 +11,22 @@ Server::~Server()
 
 }
 
-std::string Server::getServerName()
+const std::string &Server::getServerName() const
 {
 	return this->server_name;
 }
 
-unsigned short Server::getPort()
+const std::string &Server::getRoot() const
+{
+	return this->root;
+}
+
+const unsigned short &Server::getPort() const
 {
 	return this->port;
 }
 
-int Server::getServer_fd()
+const int &Server::getServer_fd() const
 {
 	return this->server_fd;
 }
@@ -31,12 +36,13 @@ std::map<std::string, Location> &Server::getLocations()
 	return this->locations;
 }
 
-std::string Server::getRoot()
+std::map<int, client> &Server::getClients()
 {
-	return this->root;
+	return this->clients;
 }
 
-void Server::setPort(unsigned short &port)
+
+void Server::setPort(unsigned short port)
 {
 	this->port = port;
 }
@@ -46,12 +52,12 @@ void Server::setfd(int &server_fd)
 	this->server_fd = server_fd;
 }
 
-void server::setServerName(const std::string &server_name)
+void Server::setServerName(const std::string &server_name)
 {
 	this->server_name = server_name;
 }
 
-void server::setRoot(std::string &root)
+void Server::setRoot(std::string &root)
 {
 	this->root = root;
 }
@@ -59,7 +65,7 @@ void server::setRoot(std::string &root)
 bool Server::init_Server(int &server_fd)
 {
 	this->server_fd = server_fd;
-	return false;
+	return true;
 }
 
 
