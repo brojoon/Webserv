@@ -41,6 +41,7 @@ class parse_request_msg_and_store_and_response
 		parse_request_msg_and_store_and_response(std::string request_msg);
 		void error_check();//config file 참조해서 error_chceck한다. rfc에 맞지않는 부분이 있는지도 체크 -> 에러발생시 (throw 예외)
 		std::string get_response();
+
 };
 
 #endif
