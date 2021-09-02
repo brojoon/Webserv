@@ -11,16 +11,16 @@ class Webserver
 {
 	private:
 		Webserver();
-
 		static Webserver *instance;
-		std::map<std::string, Server> server_list;
+		std::map<int, Server> server_list;
 	public:
 		virtual ~Webserver();
 		
 		static Webserver* getInstance();
-		std::map<std::string, Server> &getServerList();
+		std::map<int, Server> &getServerList();
 
-		bool parsing(char *str);
+		bool parsingConfig(const char *config_file);
+
 };
 
 

@@ -84,6 +84,8 @@ std::string client::get_response()
 std::string client::get_next_line(const std::string &src)
 {
 	static int end = 0;
+	// 변수 end std::string::npos 와 비교시 타입 size_type 으로 수정해야 합니다 컴파일 X !!
+
 	const int _size = src.size();
 	int start = ((end == 0) ? 0 : end + 1);
 	std::string ret;
