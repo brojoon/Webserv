@@ -2,9 +2,9 @@
 #include <string>
 #include <fstream>
 #include <cstdlib>
-#include "Webserver.hpp"
-#include "utils.hpp"
-#include "Server.hpp"
+#include "../includes/Webserver.hpp"
+#include "../includes/utils.hpp"
+#include "../includes/Server.hpp"
 
 
 Webserver *Webserver::instance;
