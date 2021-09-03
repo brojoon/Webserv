@@ -2,7 +2,7 @@
 
 namespace ft
 {
-	void split(const std::string &src, const std::string& delimiter, std::vector<std::string> &dst)
+	void split(const std::string &src, const std::string &delimiter, std::vector<std::string> &dst)
 	{
 		std::string tmp;
 
@@ -45,7 +45,6 @@ namespace ft
 	std::string get_next_line(const std::string &src)
 	{
 		static int end = 0;
-		// 변수 end std::string::npos 와 비교시 타입 size_type 으로 수정해야 합니다 컴파일 X !!
 
 		const int _size = src.size();
 		int start = ((end == 0) ? 0 : end + 1);
@@ -91,7 +90,10 @@ namespace ft
 		for (int i = 0; i <= size - len; i++)
 		{
 			if (src.substr(i, len) == sub)
+			{
 				return true;
+			}		
+				
 		}
 		return false;
 	}

@@ -3,7 +3,7 @@ NAME = webserv
 
 CC = clang++
 
-CFLAGS = -Wall -Wextra -Werror -I ./includes -std=c++98
+CFLAGS =  -I ./includes -std=c++98
 
 SRCSDIR = ./srcs/
 

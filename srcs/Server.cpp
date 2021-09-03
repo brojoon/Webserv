@@ -36,6 +36,7 @@ std::map<std::string, Location> &Server::getLocations()
 	return this->locations;
 }
 
+
 std::map<int, client> &Server::getClients()
 {
 	return this->clients;

@@ -58,14 +58,14 @@ bool Webserver::parsingConfig(const char *config_file)
 		while (1)
 		{
 			std::getline(ifs, line);
-			if (ifs.eof())
-				break ;
 			ft::split(line, " \t;", chunked_config);
 			if (line.find('{') != std::string::npos)
 				left_curly_brace++;
-			if (line.find('}' != std::string::npos))
+			if (line.find('}') != std::string::npos)
 				right_curly_brace++;
 			line.clear();
+			if (ifs.eof())
+				break ;
 		}
 		if (left_curly_brace != right_curly_brace)
 			throw "ERROR: curly_brace does not match";
