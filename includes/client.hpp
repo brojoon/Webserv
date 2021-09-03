@@ -17,7 +17,9 @@
 #include <sys/socket.h>
 
 #include "msg_checker.hpp"
+#include "utils.hpp"
 
+using namespace ft;
 class client
 {
 	public:
@@ -34,11 +36,7 @@ class client
 		msg_checker _obj;
 		//msg_chekcer 객체가 점검을 끝내고 반환하는 값을 info에 저장
 		checker_return_type _info;
-		//parse_utils
-		std::string get_next_line(const std::string &src);
-		std::string ft_strtok(std::string &src, std::string deli);
-		bool ft_contain(const std::string &src, std::string sub);
-
+		
 	public:
 		//client(std::string request_msg);
 		client(int socket);
