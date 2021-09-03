@@ -1,10 +1,16 @@
 #ifndef MSG_HPP
 #define MSG_HPP
+class Server;
 
 #include <iostream>
 #include <map>
 #include <string>
-#include "../includes/utils.hpp"
+#include "utils.hpp"
+#include "Webserver.hpp"
+#include <map>
+#include "Server.hpp"
+
+
 
 class msg_checker
 {
@@ -13,8 +19,11 @@ class msg_checker
 		{
 			std::string method;
 			std::string url_abs_path;
+			std::string query;
 			std::string version;
 			std::string status;
+			std::string ip;
+			std::string port;
 			// ...
 		}return_type;
 	private:
