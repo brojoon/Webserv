@@ -2,8 +2,8 @@
 #define SERVER_HPP
 
 #include "Location.hpp"
-#include "client.hpp"
 #include <map>
+#include "client.hpp"
 
 class Location;
 class client;

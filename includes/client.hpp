@@ -15,11 +15,13 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-
 #include "msg_checker.hpp"
 #include "utils.hpp"
 
+
 using namespace ft;
+
+
 class client
 {
 	public:
@@ -38,7 +40,7 @@ class client
 		checker_return_type _info;
 		
 	public:
-		//client(std::string request_msg);
+		client(std::string request_msg);
 		client(int socket);
 		std::string get_response();
 };

@@ -90,7 +90,10 @@ namespace ft
 		for (int i = 0; i <= size - len; i++)
 		{
 			if (src.substr(i, len) == sub)
+			{
 				return true;
+			}		
+				
 		}
 		return false;
 	}
