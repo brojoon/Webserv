@@ -1,9 +1,9 @@
 #ifndef Webserver_HPP
 #define Webserver_HPP
 
-#include <map>
-
 #define WEBSERVER Webserver::getInstance()
+
+#include <map>
 
 class Server;
 
