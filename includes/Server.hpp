@@ -3,7 +3,7 @@
 
 class Location;
 
-#include "client.hpp"
+//#include "client.hpp"
 #include "Location.hpp"
 #include <map>
 
@@ -16,7 +16,7 @@ class Server
 		unsigned short port;
 		int server_fd;
 		std::map<std::string, Location> locations;
-		std::map<int, client> clients;
+		//std::map<int, client> clients;
 
 	public:
 		Server();
@@ -27,7 +27,7 @@ class Server
 		const int &getServer_fd() const;
 		const std::string &getRoot() const;
 		std::map<std::string, Location> &getLocations();
-		std::map<int, client> &getClients();
+		//std::map<int, client> &getClients();
 
 		void setServerName(const std::string &server_name);
 		void setPort(unsigned short port);

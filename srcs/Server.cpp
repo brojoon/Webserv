@@ -37,10 +37,10 @@ std::map<std::string, Location> &Server::getLocations()
 }
 
 
-std::map<int, client> &Server::getClients()
-{
-	return this->clients;
-}
+//std::map<int, client> &Server::getClients()
+//{
+//	return this->clients;
+//}
 
 
 void Server::setPort(unsigned short port)
