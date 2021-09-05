@@ -31,7 +31,7 @@ class Server
 
 		void setServerName(const std::string &server_name);
 		void setPort(unsigned short port);
-		void setfd(int &server_fd);
+		void setfd(int server_fd);
 		void setRoot(std::string &root);
 
 		bool init_Server(int &server_fd);

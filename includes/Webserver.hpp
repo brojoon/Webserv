@@ -1,6 +1,9 @@
 #ifndef Webserver_HPP
 #define Webserver_HPP
 
+#include "../includes/Server.hpp"
+#include "../includes/Location.hpp"
+
 #define WEBSERVER Webserver::getInstance()
 
 #include <map>

@@ -1,7 +1,38 @@
 #include "../includes/utils.hpp"
+#include "../includes/Webserver.hpp"
 
 namespace ft
 {
+	void config_print()
+	{	
+		int i = 1;
+		for  (std::map<int, Server>::iterator it = WEBSERVER->getServerList().begin();
+			 it != WEBSERVER->getServerList().end(); it++, i++)
+		{
+			int j = 1;
+			std::cout << "========== SERVER " << i << "==========" << std::endl;
+			std::cout << "server_name: " << it->second.getServerName() << std::endl;
+			std::cout << "port: " << it->second.getPort() << std::endl;
+			std::cout << "server_fd: " << it->second.getServer_fd() << std::endl;
+			std::cout << "server_root : " << it->second.getRoot() << std::endl;
+			for (std::map<std::string, Location>::iterator it2 = it->second.getLocations().begin();
+				it2 != it->second.getLocations().end(); it2++, j++)
+			{
+				std::cout << "========== Location " << j << "==========" << std::endl;
+				std::cout << "Location_path: " << it2->second.getLocationPath() << std::endl;
+				std::cout << "Location_root: " << it2->second.getRoot() << std::endl;
+				std::cout << "Auto_Index: " << it2->second.getAutoIndex() << std::endl;
+				std::cout << "Allow_methos: ";
+				for (std::vector<std::string>::iterator it3 = it2->second.getAllowMethods().begin();
+					it3 != it2->second.getAllowMethods().end(); it3++)
+				{
+					std::cout << *it3 << " ";
+				}
+				std::cout << std::endl;
+			}
+		}
+	}
+
 	void split(const std::string &src, const std::string &delimiter, std::vector<std::string> &dst)
 	{
 		std::string tmp;

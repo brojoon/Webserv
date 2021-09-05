@@ -1,5 +1,6 @@
 #include "../includes/main.hpp"
 #include "../includes/client.hpp"
+#include "../includes/utils.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -13,6 +14,7 @@ int main(int argc, char *argv[])
 		return 1;
 
 	client c(5);
+	ft::config_print();
 	
 	return 0;
 }
