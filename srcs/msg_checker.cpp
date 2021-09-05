@@ -112,8 +112,7 @@ std::string	find_url(msg_checker::return_type& info)
 msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std::string, std::string> &map)
 {
 	std::string tem;
-	std::cout << "firstline " << firstline << std::endl;
-
+	info.method = ft::ft_strtok(firstline, " ");
 	std::string path = ft::ft_strtok(firstline, " ");
 	std::string http = ft::ft_strtok(firstline, "/");
 	info.version = ft::ft_strtok(firstline, "/");
@@ -128,7 +127,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		info.status = "501";
 	else if (ft::isMethods(info.method) == false)
 		info.status = "405";
-	
+
 	if (WEBSERVER->getServerList().find(i_port) != (WEBSERVER->getServerList().end()))
 	{
 		tem = find_url(info);
@@ -139,7 +138,6 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	{
 		info.status = "400";
 	}
-	std::cout << "end of check" << std::endl;
-	std::cout << info.url_abs_path << std::endl;
+	//std::cout << "root " << info.url_abs_path << std::endl;
 	return return_type();
 }
