@@ -139,5 +139,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	{
 		info.status = "400";
 	}
+	std::cout << "end of check" << std::endl;
+	std::cout << info.url_abs_path << std::endl;
 	return return_type();
 }
