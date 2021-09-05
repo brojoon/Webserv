@@ -120,10 +120,8 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
 	
-	info.ip = ft::ft_strtok(map["HOST"], ":");
-	info.port = map["HOST"];
-
-	//std::cout << "ip port " << info.ip << " " << info.port << std::endl;
+	info.ip = ft::ft_strtok(map["Host"], ":");
+	info.port = map["Host"];
 	const int i_port = atoi(info.port.c_str());
 
 	if (ft::isknown(info.method) == false)
@@ -142,6 +140,6 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		info.status = "400";
 	}
 	std::cout << "end of check" << std::endl;
-	//std::cout << info.url_abs_path << std::endl;
+	std::cout << info.url_abs_path << std::endl;
 	return return_type();
 }
