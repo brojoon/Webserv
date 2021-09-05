@@ -1,5 +1,5 @@
-#ifndef _PARSE_
-#define _PARSE_
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
 
 #include <iostream>
 #include <string>
@@ -15,6 +15,7 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+
 #include "msg_checker.hpp"
 #include "utils.hpp"
 
