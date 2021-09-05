@@ -6,80 +6,138 @@ msg_checker::msg_checker()
 	info.status = "200";
 }
 
+//경로만 오면 인덱스 붙여주고 경로에 파일이 없으면 에러  (벡터부분 추가해야함)
+void check_indexfile(msg_checker::return_type& info, std::string& root)
+{
+	std::string tem = root;
+	std::string tem_index;
+	std::vector<std::string> v;
+	v.push_back("index.html");
+	v.push_back("test.html");
+	
+	// 파일명이 있을때
+	if (tem.find('.') != std::string::npos)
+	{
+		tem = "." + tem;
+		if (access(tem.c_str(), 0) == 0)
+			return ;
+		else
+		{
+			// error 코드
+			info.status = "404";
+			return ;	
+		}
+	}
+	else // 경로만 있을때
+	{
+		if (tem.back() != '/')
+			tem.push_back('/');
+		//index가 있는지 없지지 if문 만들고 그안에 넣기
+		for (std::size_t i = 0;  i != v.size(); i++)
+		{
+			tem_index = tem + v[i];
+			tem_index = "." + tem_index;
+			if (access(tem_index.c_str(), 0) == 0)
+			{
+				root.clear();
+				root = tem_index;		
+				return ;			
+			}
+			tem_index.clear();
+		}
+		info.status = "404";
+		return;
+	}
+}
+
+void find_redirect_url(msg_checker::return_type& info, std::string& root, std::string redirect_Uri)
+{
+	const std::string url = info.url_abs_path;
+	Location redirect_Location;
+	std::map<std::string, Location> tem_map;
+	const int i_port = atoi(info.port.c_str());
+
+	tem_map = WEBSERVER->getServerList()[i_port].getLocations();
+	if (tem_map.find(redirect_Uri) != tem_map.end())
+	{
+		redirect_Location = tem_map[redirect_Uri];
+		if (redirect_Location.getRoot() != "")
+			root = redirect_Location.getRoot() + url;			
+		else
+			root = WEBSERVER->getServerList()[i_port].getRoot() + url;	
+		info.status = "301";
+		check_indexfile(info, root);
+	}
+	else
+		info.status = "404";
+}
+
+std::string	find_url(msg_checker::return_type& info)
+{
+	typedef std::map<std::string, Location>::reverse_iterator iter;
+	const std::string url = info.url_abs_path;
+	std::string redirect_Uri;
+	const int i_port = atoi(info.port.c_str());
+	std::string root;
+	
+	
+	iter start = WEBSERVER->getServerList()[i_port].getLocations().rbegin();
+	iter end = WEBSERVER->getServerList()[i_port].getLocations().rend();	
+	for (iter i = start; i != end; i++)
+	{
+		std::string location = i->first;
+		size_t len = location.size();
+		if (url.compare(0, len, location) == 0)
+		{
+			if (false)
+			//if ((redirect_Uri = i->second.getRedirection()) != "")
+			{
+				find_redirect_url(info, root, redirect_Uri);
+				return (root);					
+			}
+			if (i->second.getRoot() != "")
+				root = i->second.getRoot() + url;			
+			else
+				root = WEBSERVER->getServerList()[i_port].getRoot() + url;	
+			check_indexfile(info, root);
+			return (root);
+		}
+		location.clear();
+	}
+	root = WEBSERVER->getServerList()[i_port].getRoot() + url;
+	check_indexfile(info, root);
+	return (root);
+}
+
 msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std::string, std::string> &map)
 {
+	std::string tem;
+	//firstline = "GET /test2/index.html?a=0 HTTP/1.1";
  	info.method = ft::ft_strtok(firstline, " ");
 	std::string path = ft::ft_strtok(firstline, " ");
 	std::string http = ft::ft_strtok(firstline, "/");
 	info.version = ft::ft_strtok(firstline, "/");
-
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
-	
-	/*
-	(void)firstline;
-	(void)map;;
- 	info.method = "GET";
-	std::string path = "index.html?";
-	std::string http = "HTTP";
-	info.version = "1.1";
-	*/
-
-	info.url_abs_path = ft::ft_strtok(path, "?");
-	info.query = path;
+	info.ip = ft::ft_strtok(map["HOST"], ":");
+	info.port = map["HOST"];
+	//info.port = "8080";
+	const int i_port = atoi(info.port.c_str());
 
 	if (ft::isknown(info.method) == false)
 		info.status = "501";
 	else if (ft::isMethods(info.method) == false)
 		info.status = "405";
 	
-	////////////////////////////////////////////////////////////////////
-
-	info.ip = ft::ft_strtok(map["HOST"], ":");
-	info.port = map["HOST"];
-
-	int i_port = atoi(info.port.c_str());
-	/*
 	if (WEBSERVER->getServerList().find(i_port) != (WEBSERVER->getServerList().end()))
 	{
-		info.ip = "127.0.0.1";
-		info.port = "8080";
-	}
-	*/
-
-	std::cout << "aaa" << std::endl;
-	if (WEBSERVER->getServerList().find(i_port) != (WEBSERVER->getServerList().end()))
-	{
-		std::cout << "bbb" << std::endl;
-		std::string root;
-		std::string dir = info.url_abs_path;
-		std::string sub_dir;
-		if (info.url_abs_path[info.url_abs_path.size() - 1] != '/') // "/test/index.html" -> "/test" -> "/test/index.html/"
-		{
-			sub_dir = dir;
-			int idx = dir.size() - 1;
-			while (dir[idx--] != '/')
-				dir.pop_back();
-			dir.pop_back();
-		}
-		else
-			dir.pop_back();
-		if (WEBSERVER->getServerList()[i_port].getLocations().find(dir) \
-						!= WEBSERVER->getServerList()[i_port].getLocations().end())
-		{
-			root = WEBSERVER->getServerList()[i_port].getLocations()[info.url_abs_path].getRoot();
-		}
-		else
-		{
-			root = WEBSERVER->getServerList()[i_port].getRoot();
-		}
-		info.url_abs_path = root + std::string("/") + info.url_abs_path;
+		tem = find_url(info);
+		info.url_abs_path.clear();
+		info.url_abs_path = tem;
 	}
 	else
 	{
-		std::cout << "ccc" << std::endl;
 		info.status = "400";
 	}
-	std::cout << "ddd" << std::endl;
 	return return_type();
 }
