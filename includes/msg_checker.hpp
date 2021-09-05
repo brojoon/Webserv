@@ -1,6 +1,5 @@
-#ifndef MSG_HPP
-#define MSG_HPP
-class Server;
+#ifndef MSG_CHECKER_HPP
+#define MSG_CHECKER_HPP
 
 #include <iostream>
 #include <map>
@@ -8,9 +7,6 @@ class Server;
 #include "utils.hpp"
 #include "Webserver.hpp"
 #include <map>
-#include "Server.hpp"
-
-
 
 class msg_checker
 {

@@ -1,12 +1,12 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+class Location;
+
+#include "client.hpp"
 #include "Location.hpp"
 #include <map>
-#include "client.hpp"
 
-class Location;
-class client;
 
 class Server
 {

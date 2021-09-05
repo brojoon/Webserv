@@ -1,4 +1,5 @@
 #include "../includes/msg_checker.hpp"
+#include "../includes/Server.hpp"
 
 msg_checker::msg_checker()
 {
@@ -38,19 +39,32 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.port = map["HOST"];
 
 	int i_port = atoi(info.port.c_str());
+	/*
 	if (WEBSERVER->getServerList().find(i_port) != (WEBSERVER->getServerList().end()))
 	{
-		/*
-	info.ip = "127.0.0.1";
-	info.port = "8080";*/
+		info.ip = "127.0.0.1";
+		info.port = "8080";
+	}
+	*/
 
-	int i_port = atoi(info.port.c_str());
 	std::cout << "aaa" << std::endl;
 	if (WEBSERVER->getServerList().find(i_port) != (WEBSERVER->getServerList().end()))
 	{
 		std::cout << "bbb" << std::endl;
 		std::string root;
-		if (WEBSERVER->getServerList()[i_port].getLocations().find(info.url_abs_path) \
+		std::string dir = info.url_abs_path;
+		std::string sub_dir;
+		if (info.url_abs_path[info.url_abs_path.size() - 1] != '/') // "/test/index.html" -> "/test" -> "/test/index.html/"
+		{
+			sub_dir = dir;
+			int idx = dir.size() - 1;
+			while (dir[idx--] != '/')
+				dir.pop_back();
+			dir.pop_back();
+		}
+		else
+			dir.pop_back();
+		if (WEBSERVER->getServerList()[i_port].getLocations().find(dir) \
 						!= WEBSERVER->getServerList()[i_port].getLocations().end())
 		{
 			root = WEBSERVER->getServerList()[i_port].getLocations()[info.url_abs_path].getRoot();
@@ -59,7 +73,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		{
 			root = WEBSERVER->getServerList()[i_port].getRoot();
 		}
-		info.url_abs_path = root + info.url_abs_path;
+		info.url_abs_path = root + std::string("/") + info.url_abs_path;
 	}
 	else
 	{
