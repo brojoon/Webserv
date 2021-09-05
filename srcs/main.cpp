@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
 	if (WEBSERVER->parsingConfig(argv[1]) == false)
 		return 1;
 
-	ft::config_print();
 	client c(5);
+	ft::config_print();
 	
 	return 0;
 }
