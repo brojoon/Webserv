@@ -19,8 +19,8 @@ class Location
 		virtual ~Location();
 
 		const std::string &getLocationPath() const;
-		const bool &getAutoIndex() const;
 		const std::string &getRoot() const;
+		const bool &getAutoIndex() const;
 		std::vector<std::string> &getAllowMethods();
 
 		void setLocationPath(std::string &Location_path);

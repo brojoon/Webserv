@@ -79,6 +79,8 @@ bool Webserver::parsingConfig(const char *config_file)
 				is_http = true;
 
 			}
+			if (*iter == "server")
+				location_path.clear();
 			if (*iter == "server_name")
 			{
 				iter++;
@@ -93,6 +95,7 @@ bool Webserver::parsingConfig(const char *config_file)
 				}
 				instance->server_list[port].setServerName(server_name);
 				instance->server_list[port].setPort((unsigned short)port);
+				instance->server_list[port].setfd(-1);
 			}
 			else if (*iter == "root")
 			{

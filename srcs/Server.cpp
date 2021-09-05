@@ -48,7 +48,7 @@ void Server::setPort(unsigned short port)
 	this->port = port;
 }
 
-void Server::setfd(int &server_fd)
+void Server::setfd(int server_fd)
 {
 	this->server_fd = server_fd;
 }
