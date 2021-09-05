@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 		return 1;
 
 	ft::config_print();
-	// client c(5);
+	client c(5);
 	
 	return 0;
 }
