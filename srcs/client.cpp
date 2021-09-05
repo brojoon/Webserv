@@ -22,13 +22,13 @@ client::client(int socket)
 {
 	int ret, bufsize = 2560;
 	char buf[bufsize];
-	std::string str = "[aaaaaa]\r\n\r\n";
+	std::string str;
 
 	while (1)
 	{	
-		//ret = read(socket, buf, bufsize - 1);
-		//buf[ret] = 0;
-		//str += std::string(buf);
+		ret = read(socket, buf, bufsize - 1);
+		buf[ret] = 0;
+		str += std::string(buf);
 		if (ft_contain(str, "\r\n\r\n"))// 헤더의 끝
 		{
 			parse_msg(str);

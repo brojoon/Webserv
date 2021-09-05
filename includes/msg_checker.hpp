@@ -21,8 +21,19 @@ class msg_checker
 			std::string status;
 			std::string ip;
 			std::string port;
-			// ...
+			//요청
+			std::vector<std::string> accept;
+			std::vector<std::string> accept_Language;
+			std::vector<std::string> accept_Encoding;
+			std::string Use_Agent;
+			//일반
+			std::string Content_Language;
+			std::string Content_Length;
+			std::string Content_Location;
+			std::string Content_Type;
+			std::string Last_Modified;
 		}return_type;
+
 	private:
 		return_type info;
 	public:
