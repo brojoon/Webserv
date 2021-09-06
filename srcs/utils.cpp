@@ -156,6 +156,25 @@ namespace ft
 		}
 		return false;
 	}
+
+	// 현재시간을 string type으로 return하는 함수
+	const std::string currentDateTime() {
+		time_t     now = time(0); //현재 시간을 time_t 타입으로 저장
+		struct tm  tstruct;
+		char       buf[80];
+		tstruct = *localtime(&now);
+		tstruct.tm_hour -= 9;
+		strftime(buf, sizeof(buf), "%a, %d %b %Y %T GMT", &tstruct);
+		return buf;
+	}
+
+	//파일의 마지막 수정시간을 string typedmfh return하는 함수
+	std::string getFileModifiedTime(const std::string &src) 
+	{
+		struct stat attr;
+		stat(src.c_str(), &attr);
+		return std::string(ctime(&attr.st_mtime));
+	}
 }
 
 

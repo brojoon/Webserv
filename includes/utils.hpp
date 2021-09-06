@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sys/stat.h>
+#include <ctime>
 
 namespace ft
 {
@@ -14,6 +16,8 @@ namespace ft
 	std::string ft_strtok(std::string &src, std::string deli);
 	bool ft_contain(const std::string &src, std::string sub);
 	void config_print();
+	const std::string currentDateTime();
+	std::string getFileModifiedTime(const std::string &src) ;
 }
 
 #endif
