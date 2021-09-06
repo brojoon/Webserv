@@ -14,24 +14,24 @@ class msg_checker
 	public:
 		typedef struct return_type
 		{
+			//요청
 			std::string method;
 			std::string url_abs_path;
 			std::string query;
 			std::string version;
 			std::string status;
 			std::string ip;
-			std::string port;
-			//요청
+			std::string port;		
 			std::vector<std::string> accept;
 			std::vector<std::string> accept_Language;
 			std::vector<std::string> accept_Encoding;
-			std::string Use_Agent;
-			//일반
-			std::string Content_Language;
-			std::string Content_Length;
-			std::string Content_Location;
-			std::string Content_Type;
-			std::string Last_Modified;
+			std::string user_Agent;
+			//엔터티
+			std::vector<std::string> content_Language;
+			std::string content_Length;
+			std::string content_Location;
+			std::string content_Type;
+			std::string last_Modified;
 		}return_type;
 
 	private:
@@ -39,9 +39,9 @@ class msg_checker
 	public:
 		msg_checker();
 		return_type check(std::string &firstline, std::map<std::string, std::string> &map);
-		std::string	find_url();
-		void 		find_redirect_url(std::string& root, std::string redirect_Uri);
-		void 		check_indexfile(std::string& root);
+		std::string	find_url(Server& server);
+		void 		find_redirect_url(Server& server, std::string& root, std::string redirect_Uri);
+		void		check_indexfile(std::string& root, std::vector<std::string> v_index);
 };
 
 #endif
