@@ -7,7 +7,7 @@ msg_checker::msg_checker()
 }
 
 //경로만 오면 인덱스 붙여주고 경로에 파일이 없으면 에러  (벡터부분 추가해야함)
-void check_indexfile(msg_checker::return_type& info, std::string& root)
+void msg_checker::check_indexfile(std::string& root)
 {
 	std::string tem = root;
 	std::string tem_index;
@@ -40,7 +40,7 @@ void check_indexfile(msg_checker::return_type& info, std::string& root)
 			if (access(tem_index.c_str(), 0) == 0)
 			{
 				root.clear();
-				root = tem_index;		
+				root = tem_index.substr(1);		
 				return ;			
 			}
 			tem_index.clear();
@@ -50,7 +50,7 @@ void check_indexfile(msg_checker::return_type& info, std::string& root)
 	}
 }
 
-void find_redirect_url(msg_checker::return_type& info, std::string& root, std::string redirect_Uri)
+void msg_checker::find_redirect_url(std::string& root, std::string redirect_Uri)
 {
 	const std::string url = info.url_abs_path;
 	Location redirect_Location;
@@ -66,13 +66,13 @@ void find_redirect_url(msg_checker::return_type& info, std::string& root, std::s
 		else
 			root = WEBSERVER->getServerList()[i_port].getRoot() + url;	
 		info.status = "301";
-		check_indexfile(info, root);
+		check_indexfile(root);
 	}
 	else
 		info.status = "404";
 }
 
-std::string	find_url(msg_checker::return_type& info)
+std::string	msg_checker::find_url()
 {
 	typedef std::map<std::string, Location>::reverse_iterator iter;
 	const std::string url = info.url_abs_path;
@@ -92,20 +92,20 @@ std::string	find_url(msg_checker::return_type& info)
 			if (false)
 			//if ((redirect_Uri = i->second.getRedirection()) != "")
 			{
-				find_redirect_url(info, root, redirect_Uri);
+				find_redirect_url(root, redirect_Uri);
 				return (root);					
 			}
 			if (i->second.getRoot() != "")
 				root = i->second.getRoot() + url;			
 			else
 				root = WEBSERVER->getServerList()[i_port].getRoot() + url;	
-			check_indexfile(info, root);
+			check_indexfile(root);
 			return (root);
 		}
 		location.clear();
 	}
 	root = WEBSERVER->getServerList()[i_port].getRoot() + url;
-	check_indexfile(info, root);
+	check_indexfile(root);
 	return (root);
 }
 
@@ -118,7 +118,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.version = ft::ft_strtok(firstline, "/");
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
-	
+
 	info.ip = ft::ft_strtok(map["Host"], ":");
 	info.port = map["Host"];
 	const int i_port = atoi(info.port.c_str());
@@ -130,7 +130,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 
 	if (WEBSERVER->getServerList().find(i_port) != (WEBSERVER->getServerList().end()))
 	{
-		tem = find_url(info);
+		tem = find_url();
 		info.url_abs_path.clear();
 		info.url_abs_path = tem;
 	}
@@ -139,5 +139,5 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		info.status = "400";
 	}
 	//std::cout << "root " << info.url_abs_path << std::endl;
-	return return_type();
+	return (info);
 }
