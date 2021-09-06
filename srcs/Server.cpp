@@ -1,7 +1,7 @@
 #include <iostream>
 #include "../includes/Server.hpp"
 
-Server::Server()
+Server::Server() : server_fd(-1), client_max_body_size(0)
 {
 
 }
@@ -9,6 +9,11 @@ Server::Server()
 Server::~Server()
 {
 
+}
+
+const std::string &Server::getHost() const
+{
+	return this->host;
 }
 
 const std::string &Server::getServerName() const
@@ -21,9 +26,9 @@ const std::string &Server::getRoot() const
 	return this->root;
 }
 
-const unsigned short &Server::getPort() const
+std::vector<unsigned short> &Server::getPorts()
 {
-	return this->port;
+	return this->ports;
 }
 
 const int &Server::getServer_fd() const
@@ -42,10 +47,14 @@ std::map<std::string, Location> &Server::getLocations()
 //	return this->clients;
 //}
 
-
-void Server::setPort(unsigned short port)
+const unsigned int &Server::getClientMaxBodySize() const
 {
-	this->port = port;
+	return this->client_max_body_size;
+}
+
+void Server::setHost(const std::string &host)
+{
+	this->host = host;
 }
 
 void Server::setfd(int server_fd)
@@ -61,6 +70,11 @@ void Server::setServerName(const std::string &server_name)
 void Server::setRoot(std::string &root)
 {
 	this->root = root;
+}
+
+void Server::setClientMaxBodySize(unsigned int client_max_body_size)
+{
+	this->client_max_body_size = client_max_body_size;
 }
 
 bool Server::init_Server(int &server_fd)
