@@ -25,9 +25,19 @@ const std::string &Location::getRoot() const
 	return this->root;
 }
 
-std::vector<std::string> &Location::getAllowMethods()
+std::vector<std::string> &Location::getLimitExcept()
 {
-	return this->allow_methods;
+	return this->limit_except;
+}
+
+const std::string &Location::getRedirection() const
+{
+	return this->redirection;
+}
+
+std::vector<std::string> &Location::getDifaultFiles()
+{
+	return this->default_files;
 }
 
 void Location::setLocationPath(std::string &location_path)
@@ -45,3 +55,7 @@ void Location::setRoot(std::string &root)
 	this->root = root;
 }
 
+void Location::setRedirection(std::string &redirection)
+{
+	this->redirection = redirection;
+}

@@ -5,16 +5,36 @@ namespace ft
 {
 	void config_print()
 	{	
-		int i = 1;
+		int i = 0;
 		for  (std::map<int, Server>::iterator it = WEBSERVER->getServerList().begin();
 			 it != WEBSERVER->getServerList().end(); it++, i++)
 		{
-			int j = 1;
+			int j = 0;
 			std::cout << "========== SERVER " << i << "==========" << std::endl;
+			std::cout << "host: " << it->second.getHost() << std::endl;
 			std::cout << "server_name: " << it->second.getServerName() << std::endl;
-			std::cout << "port: " << it->second.getPort() << std::endl;
+			std::cout << "server_root: " << it->second.getRoot() << std::endl;
+			std::cout << "default_files: ";
+			for (std::vector<std::string>::iterator it1 = it->second.getDifaultFiles().begin();
+				it1 != it->second.getDifaultFiles().end(); it1++)
+			{
+				std::cout << *it1 << " ";
+			}
+			std::cout << std::endl;
+			for (std::map<int, std::string>::iterator it1 = it->second.getErrorPages().begin();
+				it1 != it->second.getErrorPages().end(); it1++)
+			{
+				std::cout << "error_page : " << it1->first << " " << it1->second << std::endl;
+			}
+			std::cout << "ports: ";
+			for (std::vector<unsigned short>::iterator it1 = it->second.getPorts().begin();
+				it1 != it->second.getPorts().end(); it1++)
+			{
+				std::cout << *it1 << " ";
+			}
+			std::cout << std::endl;
 			std::cout << "server_fd: " << it->second.getServer_fd() << std::endl;
-			std::cout << "server_root : " << it->second.getRoot() << std::endl;
+			std::cout << "client_max_body_size: " << it->second.getClientMaxBodySize() << std::endl;
 			for (std::map<std::string, Location>::iterator it2 = it->second.getLocations().begin();
 				it2 != it->second.getLocations().end(); it2++, j++)
 			{
@@ -22,11 +42,19 @@ namespace ft
 				std::cout << "Location_path: " << it2->second.getLocationPath() << std::endl;
 				std::cout << "Location_root: " << it2->second.getRoot() << std::endl;
 				std::cout << "Auto_Index: " << it2->second.getAutoIndex() << std::endl;
-				std::cout << "Allow_methos: ";
-				for (std::vector<std::string>::iterator it3 = it2->second.getAllowMethods().begin();
-					it3 != it2->second.getAllowMethods().end(); it3++)
+				std::cout << "limit_except: ";
+				for (std::vector<std::string>::iterator it3 = it2->second.getLimitExcept().begin();
+					it3 != it2->second.getLimitExcept().end(); it3++)
 				{
 					std::cout << *it3 << " ";
+				}
+				std::cout << std::endl;
+				std::cout << "redirection: " << it2->second.getRedirection() << std::endl;
+				std::cout << "default_files: ";
+				for (std::vector<std::string>::iterator it4 = it2->second.getDifaultFiles().begin();
+					it4 != it2->second.getDifaultFiles().end(); it4++)
+				{
+					std::cout << *it4 << " ";
 				}
 				std::cout << std::endl;
 			}

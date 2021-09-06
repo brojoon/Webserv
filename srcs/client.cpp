@@ -109,7 +109,7 @@ std::string client::get_response()
 	std::string _status = std::string("200");
 	ret += std::string("HTTP/1.1 ") + _status + std::string("OK\r\n");
 	ret += std::string("Content-type: text/html; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
-	std::string _abs_path = std::string("/Users/choihunjin/huchoi-git/study_web/instance/webserve/index.html");
+	std::string _abs_path = "." + _info.url_abs_path;
 	int fd = open(_abs_path.c_str(), O_RDONLY);
 	char buf[1000];
 	int read_size;
