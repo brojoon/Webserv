@@ -15,7 +15,6 @@ void client::parse_msg(std::string &request_msg)
 		value = str;
 		_header_field[key] = value;
 	}
-	_info = _obj.check(_first_line, _header_field);
 }
 
 client::client(int socket)
@@ -32,6 +31,50 @@ client::client(int socket)
 		if (ft_contain(str, "\r\n\r\n"))// 헤더의 끝
 		{
 			parse_msg(str);
+			std::string content;
+			if (_header_field.find("Content-Length") != _header_field.end())
+			{
+				int length = atoi(_header_field["Content-Lentgth"].c_str());
+				ret = 0;
+				while (length > 0)
+				{
+					ret = read(socket, buf, bufsize);
+					length -= ret;
+					buf[ret] = 0;
+					content += std::string(buf);
+				}
+			}
+			else if (_header_field.find("Transfer-Encoding") != _header_field.end())
+			{
+				std::string temp;
+				
+				unsigned int chunk;
+				while (1)
+				{
+					while (1)
+					{
+						ret = read(socket, buf, 1);
+						buf[ret] = 0;
+						temp += std::string(buf);
+						if (temp.find("\r\n") != std::string::npos)
+						{
+							chunk = atoi(temp.c_str());
+							break;
+						}
+						temp.clear();
+					}
+					if (chunk == 0)
+						break;
+					while (chunk > 0)
+					{
+						ret = read(socket, buf, bufsize);
+						buf[ret] = 0;
+						content += std::string(buf);
+						chunk -= ret;
+					}
+				}
+			}
+			_info = _obj.check(_first_line, _header_field);//content를 check()함수에 넘겨주어야함
 			break;
 		}
 		else
