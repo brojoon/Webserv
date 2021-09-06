@@ -39,6 +39,9 @@ class msg_checker
 	public:
 		msg_checker();
 		return_type check(std::string &firstline, std::map<std::string, std::string> &map);
+		std::string	find_url();
+		void 		find_redirect_url(std::string& root, std::string redirect_Uri);
+		void 		check_indexfile(std::string& root);
 };
 
 #endif
