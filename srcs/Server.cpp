@@ -41,6 +41,11 @@ std::map<std::string, Location> &Server::getLocations()
 	return this->locations;
 }
 
+std::vector<std::string> &Server::getDifaultFiles()
+{
+	return this->default_files;
+}
+
 
 //std::map<int, client> &Server::getClients()
 //{
@@ -50,6 +55,11 @@ std::map<std::string, Location> &Server::getLocations()
 const unsigned int &Server::getClientMaxBodySize() const
 {
 	return this->client_max_body_size;
+}
+
+std::map<int, std::string> &Server::getErrorPages()
+{
+	return this->error_pages;
 }
 
 void Server::setHost(const std::string &host)

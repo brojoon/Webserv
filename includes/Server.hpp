@@ -18,6 +18,9 @@ class Server
 		int server_fd;
 		std::map<std::string, Location> locations;
 		unsigned int client_max_body_size;
+		std::vector<std::string> default_files;
+		std::map<int, std::string> error_pages;
+
 		//std::map<int, client> clients;
 
 	public:
@@ -31,6 +34,8 @@ class Server
 		const std::string &getRoot() const;
 		std::map<std::string, Location> &getLocations();
 		const unsigned int &getClientMaxBodySize() const;
+		std::vector<std::string> &getDifaultFiles();
+		std::map<int, std::string> &getErrorPages();
 		//std::map<int, client> &getClients();
 
 		void setHost(const std::string &host);

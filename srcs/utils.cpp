@@ -13,7 +13,19 @@ namespace ft
 			std::cout << "========== SERVER " << i << "==========" << std::endl;
 			std::cout << "host: " << it->second.getHost() << std::endl;
 			std::cout << "server_name: " << it->second.getServerName() << std::endl;
-
+			std::cout << "server_root: " << it->second.getRoot() << std::endl;
+			std::cout << "default_files: ";
+			for (std::vector<std::string>::iterator it1 = it->second.getDifaultFiles().begin();
+				it1 != it->second.getDifaultFiles().end(); it1++)
+			{
+				std::cout << *it1 << " ";
+			}
+			std::cout << std::endl;
+			for (std::map<int, std::string>::iterator it1 = it->second.getErrorPages().begin();
+				it1 != it->second.getErrorPages().end(); it1++)
+			{
+				std::cout << "error_page : " << it1->first << " " << it1->second << std::endl;
+			}
 			std::cout << "ports: ";
 			for (std::vector<unsigned short>::iterator it1 = it->second.getPorts().begin();
 				it1 != it->second.getPorts().end(); it1++)
@@ -22,7 +34,6 @@ namespace ft
 			}
 			std::cout << std::endl;
 			std::cout << "server_fd: " << it->second.getServer_fd() << std::endl;
-			std::cout << "server_root: " << it->second.getRoot() << std::endl;
 			std::cout << "client_max_body_size: " << it->second.getClientMaxBodySize() << std::endl;
 			for (std::map<std::string, Location>::iterator it2 = it->second.getLocations().begin();
 				it2 != it->second.getLocations().end(); it2++, j++)

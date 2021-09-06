@@ -140,6 +140,13 @@ bool Webserver::parsingConfig(const char *config_file)
 				else
 					instance->server_list[index].getLocations()[location_path].setRoot(*iter);
 			}
+			else if (*iter == "error_page")
+			{
+				iter++;
+				int key = atoi((*iter).c_str());
+				iter++;
+				instance->server_list[index].getErrorPages()[key] = *iter; 
+			}
 			else if (*iter == "location")
 			{
 				iter++;
@@ -181,7 +188,10 @@ bool Webserver::parsingConfig(const char *config_file)
 				iter++;
 				while ((*iter).find('.') != std::string::npos && iter != chunked_config.end())
 				{
-					instance->server_list[index].getLocations()[location_path].getDifaultFiles().push_back(*iter);
+					if (location_path == "")
+						instance->server_list[index].getDifaultFiles().push_back(*iter);
+					else
+						instance->server_list[index].getLocations()[location_path].getDifaultFiles().push_back(*iter);
 					iter++;
 				}
 				if (iter == chunked_config.end())
