@@ -1,4 +1,6 @@
 #include "../includes/client.hpp"
+#include <cstdlib>
+#include <cstdio>
 
 void client::parse_msg(std::string &request_msg)
 {
@@ -25,7 +27,7 @@ client::client(int socket)
 
 	while (1)
 	{	
-		ret = read(socket, buf, bufsize - 1);
+		ret = read(socket, buf, 1);
 		buf[ret] = 0;
 		str += std::string(buf);
 		if (ft_contain(str, "\r\n\r\n"))// 헤더의 끝
@@ -43,11 +45,20 @@ client::client(int socket)
 					buf[ret] = 0;
 					content += std::string(buf);
 				}
+				for (std::string::iterator i = content.begin(); i != content.end(); i++)
+					if (*i == '\n' || *i == '\r')
+						length++;
+				while (length > 0)
+				{
+					ret = read(socket, buf, bufsize);
+					length -= ret;
+					buf[ret] = 0;
+					content += std::string(buf);
+				}
 			}
 			else if (_header_field.find("Transfer-Encoding") != _header_field.end())
 			{
 				std::string temp;
-				
 				unsigned int chunk;
 				while (1)
 				{
@@ -56,52 +67,41 @@ client::client(int socket)
 						ret = read(socket, buf, 1);
 						buf[ret] = 0;
 						temp += std::string(buf);
-						if (temp.find("\r\n") != std::string::npos)
+						if (atoi(temp.c_str()) == 0)
+						{
+							chunk = 0;
+							break;
+						}
+						if (temp.find("\n") != std::string::npos) //find("\r\n")이 아니라 find("\n")이 맞음
 						{
 							chunk = atoi(temp.c_str());
 							break;
 						}
-						temp.clear();
 					}
+					temp.clear();
 					if (chunk == 0)
 						break;
 					while (chunk > 0)
 					{
-						ret = read(socket, buf, bufsize);
+						ret = read(socket, buf, 1);
+						if (ret == 1 && (buf[0] == '\n' || buf[0] == '\r'))
+							continue;;
 						buf[ret] = 0;
 						content += std::string(buf);
 						chunk -= ret;
+					}
+					if (1 == recv(socket, buf, 1, MSG_PEEK | MSG_DONTWAIT))
+					{
+						buf[recv(socket, buf, 1, 0)] = 0;
+						content += buf;
 					}
 				}
 			}
 			_info = _obj.check(_first_line, _header_field);//content를 check()함수에 넘겨주어야함
 			break;
 		}
-		else
-			std::cout << ret << std::endl;
 	}
 }
-
-/*
-client::client(std::string request_msg)
-{
-	std::string str;
-	std::string temp;
-	std::string key;
-	std::string value;
-
-	str = get_next_line(request_msg);
-	std::cout << str << std::endl;
-	_first_line = str;
-	while ((str = get_next_line(request_msg)) != "\n\n")
-	{
-		key = ft_strtok(str, " :");
-		value = str;
-		_header_field[key] = value;
-	}
-	_info = _obj.check(_first_line, _header_field);
-}
-*/
 
 std::string client::get_response()
 {
@@ -109,17 +109,26 @@ std::string client::get_response()
 	std::string _status = std::string("200");
 	ret += std::string("HTTP/1.1 ") + _status + std::string("OK\r\n");
 	ret += std::string("Content-type: text/html; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
-	ret += std::string("\r\n");
 	std::string _abs_path = std::string("/Users/choihunjin/huchoi-git/study_web/instance/webserve/index.html");
 	int fd = open(_abs_path.c_str(), O_RDONLY);
 	char buf[1000];
 	int read_size;
+	std::string body;
 	while ((read_size = read(fd, buf, 999)) != 0)
 	{
 		buf[read_size] = 0;
-		ret += std::string(buf);
+		body += std::string(buf);
 	}
 	close(fd);
+	unsigned int s = body.size();
+	for (std::string::iterator i = body.begin(); i != body.end(); i++)//개행문자의 개수 다 빼줘야할듯
+	{
+		if (*i == '\n' || *i == '\r')
+			s--;
+	}
+	ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
+	ret += std::string("\r\n");
+	ret += body;
 	return ret;
 }
 
