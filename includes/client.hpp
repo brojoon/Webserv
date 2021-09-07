@@ -42,7 +42,7 @@ class client
 		
 	public:
 		client(std::string request_msg);
-		client(int socket);
+		client(int socket, int port);
 		std::string get_response();
 };
 

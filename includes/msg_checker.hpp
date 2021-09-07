@@ -20,25 +20,19 @@ class msg_checker
 			std::string query;
 			std::string version;
 			std::string status;
-			std::string ip;
-			std::string port;		
+			std::string host;
+			int			port;		
 			std::vector<std::string> accept;
 			std::vector<std::string> accept_Language;
 			std::vector<std::string> accept_Encoding;
 			std::string user_Agent;
-			//엔터티
-			std::vector<std::string> content_Language;
-			std::string content_Length;
-			std::string content_Location;
-			std::string content_Type;
-			std::string last_Modified;
 		}return_type;
 
 	private:
 		return_type info;
 	public:
 		msg_checker();
-		return_type check(std::string &firstline, std::map<std::string, std::string> &map);
+		return_type check(std::string &firstline, std::map<std::string, std::string> &map, int port);
 		std::string	find_url(Server& server);
 		void 		find_redirect_url(Server& server, std::string& root, std::string redirect_Uri);
 		void		check_indexfile(std::string& root, std::vector<std::string> v_index);
