@@ -115,7 +115,7 @@ namespace ft
 			ret = "\n\n";
 			return ret;
 		}
-		end = src.find_first_of("\r\n", start);
+		end = src.find_first_of("\n", start);
 		if (end == std::string::npos)//last line
 			ret = src.substr(start, _size - start);
 		else
@@ -174,6 +174,43 @@ namespace ft
 		struct stat attr;
 		stat(src.c_str(), &attr);
 		return std::string(ctime(&attr.st_mtime));
+	}
+
+	//"fff"와 같은 16진수 형식의 문자열을 숫자로 바꿔줌
+	long hexaStringToLong(const std::string &str)
+	{
+		long ret = 0;
+		std::map<char, int> map;
+		char c = 'a';
+		int size = str.size();
+		int temp;
+		for (int i = 0; i < size; i++)
+		{
+			if (str[i] < 'a')
+				temp = str[i] - '0';
+			else
+				temp = str[i] - 'a' + 10;
+			ret += temp * pow(16, size - i -1);
+		}
+		return ret;
+	}
+
+	//16진수의 숫자를 16진수 형식의 문자열로 바꿔줌
+	std::string longToHexaString(long src)
+	{
+		std::string ret;
+		char ch;
+		while (src != 0)
+		{
+			ch = src % 16;
+			if (ch > 10)
+				ch += 'a' - 10;
+			else
+				ch += '0';
+			ret.insert(ret.begin(), ch);
+			src /= 16;
+		}
+		return ret;
 	}
 }
 

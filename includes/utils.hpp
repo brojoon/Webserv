@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <ctime>
+#include <cmath>
 
 namespace ft
 {
@@ -18,6 +19,9 @@ namespace ft
 	void config_print();
 	const std::string currentDateTime();
 	std::string getFileModifiedTime(const std::string &src) ;
+	long hexaStringToLong(const std::string &str);
+	std::string longToHexaString(long src);
+
 }
 
 #endif
