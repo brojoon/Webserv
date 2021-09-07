@@ -15,6 +15,7 @@ class Location
 		bool autoindex;
 		std::string redirection;
 		std::vector<std::string> default_files;
+		std::map<std::string, std::string> cgi_path;
 
 	public:
 		Location();
@@ -26,6 +27,7 @@ class Location
 		std::vector<std::string> &getLimitExcept();
 		const std::string &getRedirection() const;
 		std::vector<std::string> &getDifaultFiles();
+		std::map<std::string, std::string> &getCgiPath();
 
 		void setLocationPath(std::string &Location_path);
 		void setAutoIndex(bool autoindex);

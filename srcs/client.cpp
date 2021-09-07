@@ -132,7 +132,7 @@ std::string client::get_response()
 	return ret;
 }
 
-std::string client::get_location_header(std::string &path)
+std::string client::get_location_header()
 {
 	std::string ret;
 	std::string _status = std::string("301");

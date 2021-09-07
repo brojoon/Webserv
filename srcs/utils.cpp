@@ -63,6 +63,11 @@ namespace ft
 					std::cout << *it4 << " ";
 				}
 				std::cout << std::endl;
+				for (std::map<std::string, std::string>::iterator it = it2->second.getCgiPath().begin();
+					it != it2->second.getCgiPath().end(); it++)
+				{
+					std::cout << "cgi_path: " << it->first << " " << it->second << std::endl;
+				}
 			}
 		}
 	}

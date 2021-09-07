@@ -40,6 +40,11 @@ std::vector<std::string> &Location::getDifaultFiles()
 	return this->default_files;
 }
 
+std::map<std::string, std::string> &Location::getCgiPath()
+{
+	return this->cgi_path;
+}
+
 void Location::setLocationPath(std::string &location_path)
 {
 	this->location_path = location_path;
