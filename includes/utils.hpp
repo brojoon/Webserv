@@ -1,6 +1,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <map>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -18,6 +19,17 @@ namespace ft
 	bool ft_contain(const std::string &src, std::string sub);
 	const std::string currentDateTime();
 	std::string getFileModifiedTime(const std::string &src) ;
+
+	class mime
+	{
+		private:
+			std::map<std::string, std::string> _mime;
+
+		public:
+			mime();
+			~mime();
+			std::string get_mime_type(std::string extension);
+	};
 }
 
 #endif
