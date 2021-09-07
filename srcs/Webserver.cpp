@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <cstdlib>
+#include <set>
 #include "../includes/Webserver.hpp"
 #include "../includes/utils.hpp"
 #include "../includes/Server.hpp"
@@ -29,6 +30,11 @@ Webserver *Webserver::getInstance()
 std::map<int, Server> &Webserver::getServerList()
 {
 	return this->server_list;
+}
+
+std::set<unsigned short> &Webserver::getListen()
+{
+	return this->listen;
 }
 
 bool Webserver::parsingConfig(const char *config_file)
@@ -97,6 +103,7 @@ bool Webserver::parsingConfig(const char *config_file)
 					throw "ERROR : host is wrong";
 				instance->server_list[index].getPorts().push_back((unsigned short)port);
 				instance->server_list[index].setHost("localhost");
+				instance->listen.insert((unsigned short)port);
 				iter++;
 				while (*iter == "listen")
 				{
@@ -114,6 +121,7 @@ bool Webserver::parsingConfig(const char *config_file)
 					if (tmpstr != "localhost" && tmpstr != "127.0.0.1")
 						throw "ERROR : host is wrong";
 					instance->server_list[index].getPorts().push_back((unsigned short)port);
+					instance->listen.insert((unsigned short)port);
 					iter++;
 				}
 				

@@ -42,8 +42,7 @@ int main(int argc, char *argv[])
 	std::string str;
 	struct timeval timeout;
 
-	//
-
+	
 	serv_sock=socket(PF_INET, SOCK_STREAM, 0);
 	memset(&serv_adr, 0, sizeof(serv_adr));
 	serv_adr.sin_family=AF_INET;

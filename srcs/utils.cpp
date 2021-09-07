@@ -6,6 +6,12 @@ namespace ft
 	void config_print()
 	{	
 		int i = 0;
+		for (std::set<unsigned short>::iterator it = WEBSERVER->getListen().begin();
+			it != WEBSERVER->getListen().end(); it++)
+		{
+			std::cout << "listen : " << *it << " ";
+		}
+		std::cout << std::endl;
 		for  (std::map<int, Server>::iterator it = WEBSERVER->getServerList().begin();
 			 it != WEBSERVER->getServerList().end(); it++, i++)
 		{
