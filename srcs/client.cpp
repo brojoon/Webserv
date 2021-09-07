@@ -19,7 +19,7 @@ void client::parse_msg(std::string &request_msg)
 	}
 }
 
-client::client(int socket)
+client::client(int socket, int port)
 {
 	int ret, bufsize = 2560;
 	char buf[bufsize];
@@ -97,7 +97,7 @@ client::client(int socket)
 					}
 				}
 			}
-			_info = _obj.check(_first_line, _header_field);//content를 check()함수에 넘겨주어야함
+			_info = _obj.check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
 			break;
 		}
 	}

@@ -47,7 +47,7 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 		return;
 	}
 }
-
+/*  잘못된 리다이 렉션
 void msg_checker::find_redirect_url(Server& server, std::string& root, std::string redirect_Uri)
 {
 	const std::string url = info.url_abs_path;
@@ -76,6 +76,7 @@ void msg_checker::find_redirect_url(Server& server, std::string& root, std::stri
 	else
 		info.status = "404";
 }
+*/
 
 std::string	msg_checker::find_url(Server& server)
 {
@@ -93,9 +94,19 @@ std::string	msg_checker::find_url(Server& server)
 		size_t len = location.size();
 		if (url.compare(0, len, location) == 0)
 		{
+			if ( i->second.getLimitExcept().size() != 0)
+			{	
+				std::size_t j = 0;
+				for (;j < i->second.getLimitExcept().size(); j++)
+					if (i->second.getLimitExcept()[j] == info.method)
+						break ;
+				if (j == i->second.getLimitExcept().size())
+					info.status = "403";
+			}
 			if ((redirect_Uri = i->second.getRedirection()) != "")
 			{
-				find_redirect_url(server, root, redirect_Uri);
+				root = redirect_Uri;
+				info.status = "301";
 				return (root);					
 			}
 			if (i->second.getRoot() != "")
@@ -115,7 +126,7 @@ std::string	msg_checker::find_url(Server& server)
 	return (root);
 }
 
-msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std::string, std::string> &map)
+msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std::string, std::string> &map, int port)
 {
 	std::string tem;
 	info.method = ft::ft_strtok(firstline, " ");
@@ -125,56 +136,62 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
 
-	info.ip = ft::ft_strtok(map["Host"], ":");
-	info.port = map["Host"];
-	const int i_port = atoi(info.port.c_str());
+	info.host = map["Host"];
+	info.port = port;
 
-	// 값이 없으면 모든 미디어 유형 / 서버가 지원하지 않는경우 [406]
-	ft::split(map["Accept"], " ,", info.accept);
-	// 일단저장
-	ft::split(map["Accept-Language"], " ,", info.accept_Language);
-	// 헤더에 따라 수용 가능한 응답을 보낼 수 없는 경우 서버는 [406(Not Acceptable)] 상태 코드와 함께 오류 응답
-	ft::split(map["Accept-Encoding"], " ,", info.accept_Encoding);
-	// 여러 제품 토큰과 사용자 에이전트의 중요한 부분을 구성하는 에이전트 및 하위 제품을 식별하는 설명
-	info.user_Agent = map["User-Agent"];
-
-	// 값이 없으면 모든 언어 / 요청 응답 상관없이 내용의 언어 명시
-	//예를 들어 한국 사람한테 일본어를 가르치는 사이트일 경우, 페이지 언어는 일본어더라도 Content-Language는 ko-KR일 수 있음
-	ft::split(map["Content-Language"], " ,", info.content_Language);
-	// 요청과 응답 메시지의 본문 크기를 바이트 단위로 표시
-	info.content_Length = map["Content-Length"];
-	// 그냥 파일 상대루트 반환하면 되는건가?
-	info.content_Location = map["Content-Location"];
-	// 컨텐츠의 타입(MIME)과 문자열 인코딩(utf-8 등등)을 명시할 수 있습니다. ex) Content-Type: text/html; charset=utf-8
-	info.content_Type = map["Content-Type"];
-	// ??
-	info.last_Modified = map["Last-Modified"];
+	ft::split(map["Accept"], " ,", info.accept); // 값이 없으면 모든 미디어 유형 / 서버가 지원하지 않는경우 [406]
+	ft::split(map["Accept-Language"], " ,", info.accept_Language);	
+	ft::split(map["Accept-Encoding"], " ,", info.accept_Encoding); // 헤더에 따라 수용 가능한 응답을 보낼 수 없는 경우 서버는 [406(Not Acceptable)] 상태 코드와 함께 오류 응답
+	info.user_Agent = map["User-Agent"]; // 여러 제품 토큰과 사용자 에이전트의 중요한 부분을 구성하는 에이전트 및 하위 제품을 식별하는 설명
 
 	// 허용 method가 아닌경우 에러 메세지
 	if (ft::isknown(info.method) == false)
 		info.status = "501";
 	else if (ft::isMethods(info.method) == false)
 		info.status = "405";
-
+	//
 	std::map<int, Server>::iterator server_iter = WEBSERVER->getServerList().begin();
 	for (; server_iter != WEBSERVER->getServerList().end(); server_iter++)
 	{
-		std::vector<unsigned short>::iterator listen_iter = server_iter->second.getPorts().begin(); 
-		for (; listen_iter != server_iter->second.getPorts().end(); listen_iter++)
+		if (server_iter->second.getServerName() == info.host)
 		{
-			if (*listen_iter == i_port)
+			std::vector<unsigned short>::iterator listen_iter = server_iter->second.getPorts().begin(); 
+			for (; listen_iter != server_iter->second.getPorts().end(); listen_iter++)
 			{
-				tem = find_url(server_iter->second);
-				info.url_abs_path.clear();
-				info.url_abs_path = tem;
-				break ;
+				if (*listen_iter == info.port)
+				{
+					tem = find_url(server_iter->second);
+					info.url_abs_path.clear();
+					info.url_abs_path = tem;
+					break ;
+				}
 			}
+			if (listen_iter != server_iter->second.getPorts().end())
+				break ;
 		}
-		if (listen_iter != server_iter->second.getPorts().end())
-			break ;
 	}
 	if (server_iter == WEBSERVER->getServerList().end())
-		info.status = "400";
+	{
+		server_iter = WEBSERVER->getServerList().begin();
+		for (; server_iter != WEBSERVER->getServerList().end(); server_iter++)
+		{
+			std::vector<unsigned short>::iterator listen_iter = server_iter->second.getPorts().begin(); 
+			for (; listen_iter != server_iter->second.getPorts().end(); listen_iter++)
+			{
+				if (*listen_iter == info.port)
+				{
+					tem = find_url(server_iter->second);
+					info.url_abs_path.clear();
+					info.url_abs_path = tem;
+					break ;
+				}
+			}
+			if (listen_iter != server_iter->second.getPorts().end())
+				break ;
+		}
+		if (server_iter == WEBSERVER->getServerList().end())
+			info.status = "400";	
+	}
 
 	std::cout << "root " << info.url_abs_path << std::endl;
 	return (info);

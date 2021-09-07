@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 	FD_ZERO(&read_set);
 	int fd_max;
 	int ret;
+	int port;
 	std::string str;
 	struct timeval timeout;
 
@@ -94,7 +95,8 @@ int main(int argc, char *argv[])
 					{
 						//
 						str.clear();
-						client obj(i);
+						port = (int)ntohs(serv_adr.sin_port);
+						client obj(i, port);
 						str = obj.get_response();
 						write(i, str.c_str(), str.size());
 						str.clear();
