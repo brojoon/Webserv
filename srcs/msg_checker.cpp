@@ -1,10 +1,14 @@
 #include "../includes/msg_checker.hpp"
 #include "../includes/Server.hpp"
 
+
+
 msg_checker::msg_checker()
 {
 	info.status = "200";
 }
+
+msg_checker::~msg_checker() {}
 
 //경로만 오면 인덱스 붙여주고 경로에 파일이 없으면 에러
 void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_index)
@@ -27,7 +31,6 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 	}
 	else // 경로만 있을때
 	{
-		
 		if (tem.back() != '/')
 			tem.push_back('/');
 		//index가 있는지 없지 if문 만들고 그안에 넣기
@@ -109,6 +112,7 @@ std::string	msg_checker::find_url(Server& server)
 				info.status = "301";
 				return (root);					
 			}
+			info.cgi_path = i->second.getCgiPath();	
 			if (i->second.getRoot() != "")
 				root = i->second.getRoot() + url;			
 			else
@@ -117,6 +121,23 @@ std::string	msg_checker::find_url(Server& server)
 				check_indexfile(root, i->second.getDifaultFiles());
 			else
 				check_indexfile(root, server_index);
+			int idx = root.find('.');
+			info.extention = root.substr(idx);
+			if (info.cgi_path != "")
+			{
+				std::vector<std::string> cgi = i->second.getCigExcept();
+				size_t i = 0;
+				for (;i < cgi.size(); i++)
+				{
+					if (cgi[i] == info.extention)
+					{
+						info.is_cgi = true;
+						break ;
+					}
+				}
+				if (i == cgi.size())
+					info.is_cgi = false;			
+			}
 			return (root);
 		}
 		location.clear();

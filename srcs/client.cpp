@@ -97,11 +97,15 @@ client::client(int socket, int port)
 					}
 				}
 			}
-			_info = _obj.check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
+			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
 			break;
 		}
 	}
 }
+
+// length 스트링의 넣기 다쓰고 i < 17 까지 free해주기/
+//char **env = ft::env("length", _info.extention, _info.url_abs_path, _info.query,
+//		_info.method,_info.host, std::to_string(_info.port), _info.version).get_env();
 
 std::string client::get_response()
 {

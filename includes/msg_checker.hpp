@@ -21,7 +21,12 @@ class msg_checker
 			std::string version;
 			std::string status;
 			std::string host;
-			int			port;		
+			int			port;
+			std::string cgi_path;
+			std::string extention;
+			bool		is_cgi;
+			
+
 			std::vector<std::string> accept;
 			std::vector<std::string> accept_Language;
 			std::vector<std::string> accept_Encoding;
@@ -32,6 +37,7 @@ class msg_checker
 		return_type info;
 	public:
 		msg_checker();
+		~msg_checker();
 		return_type check(std::string &firstline, std::map<std::string, std::string> &map, int port);
 		std::string	find_url(Server& server);
 		void 		find_redirect_url(Server& server, std::string& root, std::string redirect_Uri);
