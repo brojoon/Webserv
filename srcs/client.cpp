@@ -1,6 +1,9 @@
 #include "../includes/client.hpp"
 #include <cstdlib>
 #include <cstdio>
+# include <sys/types.h>
+# include <sys/wait.h>
+#include <fcntl.h>
 
 void client::parse_msg(std::string &request_msg)
 {
@@ -118,18 +121,26 @@ std::string client::get_response()
 	char buf[1000];
 	int read_size;
 	std::string body;
-	while ((read_size = read(fd, buf, 999)) != 0)
+	if (!_info.cgi_path.empty())
 	{
-		buf[read_size] = 0;
-		body += std::string(buf);
+		std::cout << "cgi" << std::endl;
+		body = cgi_process();
+	}
+	else
+	{
+		while ((read_size = read(fd, buf, 999)) != 0)
+		{
+			buf[read_size] = 0;
+			body += std::string(buf);
+		}
 	}
 	close(fd);
 	unsigned int s = body.size();
-	for (std::string::iterator i = body.begin(); i != body.end(); i++)//개행문자의 개수 다 빼줘야할듯
+	/*for (std::string::iterator i = body.begin(); i != body.end(); i++)//개행문자의 개수 다 빼줘야할듯
 	{
 		if (*i == '\n' || *i == '\r')
 			s--;
-	}
+	}*/ 
 	ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
 	ret += std::string("\r\n");
 	ret += body;
@@ -144,4 +155,131 @@ std::string client::get_location_header()
 	ret += std::string("Location: ") + _info.url_abs_path;
 
 	return ret;
+}
+
+
+std::string client::cgi_process()
+{
+    std::string ret;
+    char    *argv[3];
+    int     pip[2];
+    argv[0] = strdup(_info.cgi_path.c_str());
+    argv[1] = strdup(("." + _info.url_abs_path).c_str());
+	std::cout << argv[0] << std::endl << argv[1] << std::endl;
+	argv[2] = NULL;
+
+    //argv[0] = "";
+    //argv[1] = _info.url_abs_path;
+    //argv[0] = strdup("/bin/ls");
+    //argv[1] = NULL;
+    //argv[2] = NULL;
+    char **env = ft::env("200", _info.extention, _info.url_abs_path, _info.query,\
+    		_info.method,_info.host, std::to_string(_info.port), _info.version).get_env();
+	for (int i =0 ; i < 17; i++)
+		std::cout << env[i] << std::endl;
+	env[2] = strdup("text/html");
+    int nbytes;
+    char inbuf[200];
+    if (pipe(pip) != 0)
+    {   
+        std::cout << "pipe() error" << std::endl; 
+        return 0;
+    }
+    pid_t pid = fork();
+    if (pid == 0) 
+    {
+        dup2(pip[1], 1);
+        close(pip[0]);
+        close(pip[1]);
+        if (-1 == execve(argv[0], argv, env))
+            std::cout << "execve error" << std::endl;
+        exit(-1);
+    }
+    else if (pid > 0) 
+    {
+        int status;
+        close(pip[1]);
+        while ((nbytes = read(pip[0], inbuf, 199)) != 0)
+        {
+            inbuf[nbytes] = 0;
+            ret += inbuf;
+        }
+        close(pip[0]);
+        waitpid(pid, &status, 0);
+    }
+    else
+    {
+        std::cout << "fork error " << std::endl;
+        exit (1);
+    }
+    /*free(argv[0]);
+    free(argv[1]);
+    for (int i = 0; i < 18; i++)
+        free(env[i]);*/
+	/*std::cout << "*********************** " << std::endl;
+	std::cout << ret << std::endl;
+	std::cout << "*********************** " << std::endl;*/
+
+    std::string::size_type idx = 0;
+    while (idx < ret.size())
+    {
+        idx = ret.find_first_of("\n", idx);
+        if (ret[idx + 1] == '\n')
+        {
+            ret.erase(0, idx + 2);
+            break;
+        }
+        idx++;
+    }
+    return ret;
+}
+
+
+
+msg_checker::msg_checker()
+{
+	info.status = "200";
+}
+
+msg_checker::~msg_checker() {}
+
+//경로만 오면 인덱스 붙여주고 경로에 파일이 없으면 에러
+void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_index)
+{
+	std::string tem = root;
+	std::string tem_index;
+
+	// 파일명이 있을때
+	if (tem.find('.') != std::string::npos)
+	{
+		tem = "." + tem;
+		if (access(tem.c_str(), 0) == 0)
+			return ;
+		else
+		{
+			// error 코드
+			info.status = "404";
+			return ;	
+		}
+	}
+	else // 경로만 있을때
+	{
+		if (tem.back() != '/')
+			tem.push_back('/');
+		//index가 있는지 없지 if문 만들고 그안에 넣기
+		for (std::size_t i = 0;  i != v_index.size(); i++)
+		{
+			tem_index = tem + v_index[i];
+			tem_index = "." + tem_index;
+			if (access(tem_index.c_str(), 0) == 0)
+			{
+				root.clear();
+				root = tem_index.substr(1);		
+				return ;			
+			}
+			tem_index.clear();
+		}
+		info.status = "404";
+		return;
+	}
 }

@@ -1,55 +1,6 @@
 #include "../includes/msg_checker.hpp"
 #include "../includes/Server.hpp"
 
-
-
-msg_checker::msg_checker()
-{
-	info.status = "200";
-}
-
-msg_checker::~msg_checker() {}
-
-//경로만 오면 인덱스 붙여주고 경로에 파일이 없으면 에러
-void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_index)
-{
-	std::string tem = root;
-	std::string tem_index;
-
-	// 파일명이 있을때
-	if (tem.find('.') != std::string::npos)
-	{
-		tem = "." + tem;
-		if (access(tem.c_str(), 0) == 0)
-			return ;
-		else
-		{
-			// error 코드
-			info.status = "404";
-			return ;	
-		}
-	}
-	else // 경로만 있을때
-	{
-		if (tem.back() != '/')
-			tem.push_back('/');
-		//index가 있는지 없지 if문 만들고 그안에 넣기
-		for (std::size_t i = 0;  i != v_index.size(); i++)
-		{
-			tem_index = tem + v_index[i];
-			tem_index = "." + tem_index;
-			if (access(tem_index.c_str(), 0) == 0)
-			{
-				root.clear();
-				root = tem_index.substr(1);		
-				return ;			
-			}
-			tem_index.clear();
-		}
-		info.status = "404";
-		return;
-	}
-}
 /*  잘못된 리다이 렉션
 void msg_checker::find_redirect_url(Server& server, std::string& root, std::string redirect_Uri)
 {

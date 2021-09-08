@@ -35,6 +35,7 @@ class msg_checker
 
 	private:
 		return_type info;
+	
 	public:
 		msg_checker();
 		~msg_checker();
