@@ -63,11 +63,14 @@ namespace ft
 					std::cout << *it4 << " ";
 				}
 				std::cout << std::endl;
-				for (std::map<std::string, std::string>::iterator it = it2->second.getCgiPath().begin();
-					it != it2->second.getCgiPath().end(); it++)
+				std::cout << "cgi_except: ";
+				for (std::vector<std::string>::iterator it = it2->second.getCigExcept().begin();
+					it != it2->second.getCigExcept().end(); it++)
 				{
-					std::cout << "cgi_path: " << it->first << " " << it->second << std::endl;
+					std::cout << *it << " ";
 				}
+				std::cout << std::endl;
+				std::cout << "cgi_path: " << it2->second.getCgiPath() << std::endl;
 			}
 		}
 	}

@@ -40,7 +40,12 @@ std::vector<std::string> &Location::getDifaultFiles()
 	return this->default_files;
 }
 
-std::map<std::string, std::string> &Location::getCgiPath()
+std::vector<std::string> &Location::getCigExcept()
+{
+	return this->cig_except;
+}
+
+const std::string &Location::getCgiPath() const
 {
 	return this->cgi_path;
 }
@@ -63,4 +68,9 @@ void Location::setRoot(std::string &root)
 void Location::setRedirection(std::string &redirection)
 {
 	this->redirection = redirection;
+}
+
+void Location::setCgiPath(std::string &cig_path)
+{
+	this->cgi_path = cig_path;
 }

@@ -185,12 +185,20 @@ bool Webserver::parsingConfig(const char *config_file)
 					break;
 				iter--;
 			}
+			else if (*iter == "cgi_except")
+			{
+				iter++;
+				while ((*iter)[0] == '.')
+				{
+					instance->server_list[index].getLocations()[location_path].getCigExcept().push_back(*iter);
+					iter++;
+				}
+				iter--;
+			}
 			else if (*iter == "cgi_path")
 			{
 				iter++;
-				std::string extension = *iter; 
-				iter++;
-				instance->server_list[index].getLocations()[location_path].getCgiPath()[extension] = *iter;
+				instance->server_list[index].getLocations()[location_path].setCgiPath(*iter);
 			}
 			else if (*iter == "return")
 			{

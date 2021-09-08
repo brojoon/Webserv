@@ -15,7 +15,9 @@ class Location
 		bool autoindex;
 		std::string redirection;
 		std::vector<std::string> default_files;
-		std::map<std::string, std::string> cgi_path;
+		std::vector<std::string> cig_except;
+		std::string cgi_path;
+
 
 	public:
 		Location();
@@ -27,12 +29,15 @@ class Location
 		std::vector<std::string> &getLimitExcept();
 		const std::string &getRedirection() const;
 		std::vector<std::string> &getDifaultFiles();
-		std::map<std::string, std::string> &getCgiPath();
+		std::vector<std::string> &getCigExcept();
+		const std::string &getCgiPath() const;
 
 		void setLocationPath(std::string &Location_path);
 		void setAutoIndex(bool autoindex);
 		void setRoot(std::string &root);
 		void setRedirection(std::string &redirection);
+		void setCgiPath(std::string &cig_path);
+
 
 };
 
