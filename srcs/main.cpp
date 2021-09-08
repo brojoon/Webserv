@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	memset(&serv_adr, 0, sizeof(serv_adr));
 	serv_adr.sin_family=AF_INET;
 	serv_adr.sin_addr.s_addr=htonl(INADDR_ANY);
-	serv_adr.sin_port = htons(20003);
+	serv_adr.sin_port = htons(20000);
 	if(bind(serv_sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr))==-1)
 		error_handling("bind() error");
 	if(listen(serv_sock, 20)==-1)
