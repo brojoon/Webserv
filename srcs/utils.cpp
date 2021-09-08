@@ -237,7 +237,7 @@ namespace ft
 		std::string version)
 	{
 		_vec_env[0] = "AUTH_TYPE=Basic";
-		_vec_env[1] = "CONTENT_LENGTH=" + length;
+		_vec_env[1] = "CONTENT_LENGTH=0";
 		_vec_env[2] = "CONTENT_TYPE=" + ft::mime().get_mime_type(extention);
 		_vec_env[3] = "GATEWAY_INTERFACE=CGI/1.1";
 		_vec_env[4] = "PATH_INFO=." + url;

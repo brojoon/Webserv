@@ -165,7 +165,7 @@ std::string client::cgi_process()
     int     pip[2];
     argv[0] = strdup(_info.cgi_path.c_str());
     argv[1] = strdup(("." + _info.url_abs_path).c_str());
-	std::cout << argv[0] << std::endl << argv[1] << std::endl;
+	//std::cout << argv[0] << std::endl << argv[1] << std::endl;
 	argv[2] = NULL;
 
     //argv[0] = "";
@@ -175,6 +175,8 @@ std::string client::cgi_process()
     //argv[2] = NULL;
     char **env = ft::env("2000", _info.extention, _info.url_abs_path, _info.query,\
     		_info.method,_info.host, std::to_string(_info.port), _info.version).get_env();
+
+	
 	for (int i =0 ; i < 17; i++)
 		std::cout << env[i] << std::endl;
     int nbytes;
@@ -185,26 +187,30 @@ std::string client::cgi_process()
         return 0;
     }
     pid_t pid = fork();
+
     if (pid == 0) 
     {
         dup2(pip[1], 1);
         close(pip[0]);
         close(pip[1]);
+		write(2, "dddd\n", 5);
         if (-1 == execve(argv[0], argv, env))
-            std::cout << "execve error" << std::endl;
+			write(2, "execve error\n", 13);
         exit(-1);
     }
     else if (pid > 0) 
     {
         int status;
+        
         close(pip[1]);
+		waitpid(pid, &status, 0);
+		std::cout << "11111111111111" << std::endl;
         while ((nbytes = read(pip[0], inbuf, 199)) != 0)
         {
             inbuf[nbytes] = 0;
             ret += inbuf;
         }
-        close(pip[0]);
-        waitpid(pid, &status, 0);
+		close(pip[0]);
     }
     else
     {
