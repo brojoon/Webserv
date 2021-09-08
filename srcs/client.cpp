@@ -22,15 +22,24 @@ void client::parse_msg(std::string &request_msg)
 	}
 }
 
-client::client(int socket, int port)
+client::client(int socket, int port, fd_set *read_set)
 {
 	int ret, bufsize = 2560;
 	char buf[bufsize];
 	std::string str;
 
 	while (1)
-	{	
+	{
 		ret = read(socket, buf, 1);
+		socker_num = ret;
+		if (ret == 0)
+		{
+			std::cout << "disconnected: " << socket << std::endl;
+			FD_CLR(socket, read_set);
+			close(socket);
+			WEBSERVER->getClientSockets().erase(socket);
+			return;
+		}
 		buf[ret] = 0;
 		str += std::string(buf);
 		if (ft_contain(str, "\r\n\r\n"))// 헤더의 끝
@@ -281,4 +290,9 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 		info.status = "404";
 		return;
 	}
+}
+
+int client::getSockNum()
+{
+	return this->socker_num;
 }

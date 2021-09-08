@@ -1,13 +1,38 @@
-#ifndef Webserver_HPP
-#define Webserver_HPP
+#ifndef webserver_hpp
+#define webserver_hpp
 
 #include "../includes/Server.hpp"
 #include "../includes/Location.hpp"
 
 #define WEBSERVER Webserver::getInstance()
+#define BUF_SIZE 102410
+#define SMALL_BUF 100
 
 #include <map>
 #include <set>
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <cstdio>
+#include <exception>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstring>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <vector>
+#include <ctime>
+#include <cmath>
+#include <sys/select.h>
+
+typedef struct ServerFD
+{
+	int socket;
+	struct sockaddr_in serv_adr;
+
+}ServerFD;
 
 class Server;
 
@@ -17,16 +42,23 @@ class Webserver
 		Webserver();
 		static Webserver *instance;
 		std::map<int, Server> server_list;
-		std::set<unsigned short> listen;
+		std::set<unsigned short> listen_port;
+		std::map<int, unsigned short> client_sockets; 
+		std::map<int, ServerFD> server_sockets; 
+		int fd_max;
 	public:
 		virtual ~Webserver();
 		
 		static Webserver* getInstance();
 		std::map<int, Server> &getServerList();
-		std::set<unsigned short> &getListen();
+		std::set<unsigned short> &getListenPort();
+		std::map<int, unsigned short> &getClientSockets();
+		std::map<int, ServerFD> &getServerSockets();
+		
 
 		bool parsingConfig(const char *config_file);
-
+		void error_handling(const char *message);
+		void initWebServer();
 };
 
 

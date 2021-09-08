@@ -42,9 +42,10 @@ class client
 		std::string cgi_process();
 	public:
 		client(std::string request_msg);
-		client(int socket, int port);
+		client(int socket, int port, fd_set *read_set);
 		std::string get_response();
 		std::string get_location_header();
+		int getSockNum();
 };
 
 #endif

@@ -6,6 +6,8 @@
 #include "../includes/Webserver.hpp"
 #include "../includes/utils.hpp"
 #include "../includes/Server.hpp"
+#include "../includes/client.hpp"
+
 
 
 Webserver *Webserver::instance;
@@ -17,6 +19,19 @@ Webserver::Webserver()
 
 Webserver::~Webserver()
 {
+	for (std::map<int, unsigned short>::iterator it = instance->client_sockets.begin();
+		it != instance->client_sockets.end(); it++)
+	{
+		FD_CLR(it->first, &read_set);
+		close(it->first);
+	}
+	for (std::map<int, ServerFD>::iterator it = instance->client_sockets.begin();
+		it != instance->client_sockets.end(); it++)
+	{
+		FD_CLR(it->first, &read_set);
+		close(it->first);
+	}	
+	instance->server_sockets;
 	delete instance;
 }
 
@@ -32,9 +47,19 @@ std::map<int, Server> &Webserver::getServerList()
 	return this->server_list;
 }
 
-std::set<unsigned short> &Webserver::getListen()
+std::set<unsigned short> &Webserver::getListenPort()
 {
-	return this->listen;
+	return this->listen_port;
+}
+
+std::map<int, unsigned short> &getClientSockets()
+{
+	return this->client_sockets;
+}
+
+std::map<int, ServerFD> &getServerSockets()
+{
+	return this->server_sockets;
 }
 
 bool Webserver::parsingConfig(const char *config_file)
@@ -103,7 +128,7 @@ bool Webserver::parsingConfig(const char *config_file)
 					throw "ERROR : host is wrong";
 				instance->server_list[index].getPorts().push_back((unsigned short)port);
 				instance->server_list[index].setHost("localhost");
-				instance->listen.insert((unsigned short)port);
+				instance->listen_port.insert((unsigned short)port);
 				iter++;
 				while (*iter == "listen")
 				{
@@ -121,7 +146,7 @@ bool Webserver::parsingConfig(const char *config_file)
 					if (tmpstr != "localhost" && tmpstr != "127.0.0.1")
 						throw "ERROR : host is wrong";
 					instance->server_list[index].getPorts().push_back((unsigned short)port);
-					instance->listen.insert((unsigned short)port);
+					instance->listen_port.insert((unsigned short)port);
 					iter++;
 				}
 				
@@ -231,5 +256,128 @@ bool Webserver::parsingConfig(const char *config_file)
 	}
 	ifs.close();
 	return true;
+}
+
+void Webserver::error_handling(const char* message)
+{
+	fputs(message, stderr);
+	fputc('\n', stderr);
+	exit(1);
+}
+
+void Webserver::initWebServer()
+{
+	int serv_sock, clnt_sock;
+	struct sockaddr_in serv_adr, clnt_adr;
+	socklen_t clnt_adr_size;
+	char buf[BUF_SIZE];
+	int socketnum = 0;
+	bool connected;
+
+	//
+
+	fd_set read_set, read_temp;
+	FD_ZERO(&read_set);
+	int fd_max;
+	int ret;
+	int port;
+	std::string str;
+	struct timeval timeout;
+
+	
+	// serv_sock=socket(PF_INET, SOCK_STREAM, 0);
+	// memset(&serv_adr, 0, sizeof(serv_adr));
+	// serv_adr.sin_family=AF_INET;
+	// serv_adr.sin_addr.s_addr=htonl(INADDR_ANY);
+	// serv_adr.sin_port = htons(20000);
+	// if(bind(serv_sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr))==-1)
+	// 	error_handling("bind() error");
+	// if(listen(serv_sock, 1024)==-1)
+	// 	error_handling("listen() error");
+
+	//
+	for (std::set<unsigned short>::iterator it = instance->listen_port.begin();
+		it != instance->listen_port.end(); it++)
+	{
+		socketnum = socket(PF_INET, SOCK_STREAM, 0);
+		instance->server_sockets[socketnum];
+		instance->server_sockets[socketnum].socket = socketnum;
+		memset(&instance->server_sockets[socketnum].serv_adr, 0, sizeof(instance->server_sockets[socketnum].serv_adr));
+		instance->server_sockets[socketnum].serv_adr.sin_family= AF_INET;
+		instance->server_sockets[socketnum].serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
+		instance->server_sockets[socketnum].serv_adr.sin_port = htons(*it);
+		if (bind(instance->server_sockets[socketnum].socket, (struct sockaddr*)&instance->server_sockets[socketnum].serv_adr,
+			sizeof(instance->server_sockets[socketnum].serv_adr)) == -1)
+		{
+			error_handling("bind() error");
+		}
+		if(listen(socketnum, 20)==-1)
+			error_handling("listen() error");
+		fcntl(instance->server_sockets[socketnum].socket, F_SETFL, O_NONBLOCK);
+		FD_SET(instance->server_sockets[socketnum].socket, &read_set);
+	}
+
+	fd_max = instance->server_sockets.rbegin()->first;
+	std::cout << "fd_max : " << fd_max << std::endl;
+
+	while(1)
+	{
+		timeout.tv_sec = 5;
+		timeout.tv_usec = 5000;
+		read_temp = read_set;
+		ret = select(fd_max + 1, &read_temp, NULL, NULL, &timeout);
+		if (ret < 0)
+		{
+			printf("some error detached");
+			break;
+		}
+		else if (ret == 0)
+		{
+			printf("time out!\n");
+			continue;
+		}
+		else
+		{
+			for (int i = 0; i < fd_max + 1; i++)
+			{
+				if (FD_ISSET(i, &read_temp))
+				{
+					connected = false;
+					for (std::map<int, ServerFD>::iterator it = instance->server_sockets.begin();
+						it != instance->server_sockets.end(); it++)
+					{
+						if (it->first == i)
+						{
+							std::cout << "new clnt is connected" << std::endl;
+							clnt_adr_size = sizeof(clnt_adr);
+							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
+							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
+							std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
+							FD_SET(clnt_sock, &read_set);
+							if (fd_max < instance->client_sockets.rbegin()->first)
+								fd_max = clnt_sock;
+							connected = true;
+							break;
+						}
+					}
+					if (connected != true) //read message
+					{
+						std::cout << "통신에 사용된 client socket : " << i << std::endl;
+						str.clear();
+						port = ntohs(instance->client_sockets[i]);
+						std::cout << "port : " << port << std::endl;
+						client obj(i, port, &read_set);
+						if (obj.getSockNum() == 0)
+							continue;
+						str = obj.get_response();
+						write(i, str.c_str(), str.size());
+						str.clear();
+					}
+				}
+			}
+		}
+	}
+	close(serv_sock);
+
 }
 

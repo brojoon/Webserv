@@ -1,13 +1,14 @@
 #include "../includes/utils.hpp"
 #include "../includes/Webserver.hpp"
+#include <cstring>
 
 namespace ft
 {
 	void config_print()
 	{	
 		int i = 0;
-		for (std::set<unsigned short>::iterator it = WEBSERVER->getListen().begin();
-			it != WEBSERVER->getListen().end(); it++)
+		for (std::set<unsigned short>::iterator it = WEBSERVER->getListenPort().begin();
+			it != WEBSERVER->getListenPort().end(); it++)
 		{
 			std::cout << "listen : " << *it << " ";
 		}
