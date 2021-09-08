@@ -185,6 +185,13 @@ bool Webserver::parsingConfig(const char *config_file)
 					break;
 				iter--;
 			}
+			else if (*iter == "cgi_path")
+			{
+				iter++;
+				std::string extension = *iter; 
+				iter++;
+				instance->server_list[index].getLocations()[location_path].getCgiPath()[extension] = *iter;
+			}
 			else if (*iter == "return")
 			{
 				iter++;

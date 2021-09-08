@@ -44,6 +44,7 @@ class client
 		client(std::string request_msg);
 		client(int socket, int port);
 		std::string get_response();
+		std::string get_location_header();
 };
 
 #endif
