@@ -173,11 +173,10 @@ std::string client::cgi_process()
     //argv[0] = strdup("/bin/ls");
     //argv[1] = NULL;
     //argv[2] = NULL;
-    char **env = ft::env("200", _info.extention, _info.url_abs_path, _info.query,\
+    char **env = ft::env("2000", _info.extention, _info.url_abs_path, _info.query,\
     		_info.method,_info.host, std::to_string(_info.port), _info.version).get_env();
 	for (int i =0 ; i < 17; i++)
 		std::cout << env[i] << std::endl;
-	env[2] = strdup("text/html");
     int nbytes;
     char inbuf[200];
     if (pipe(pip) != 0)

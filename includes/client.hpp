@@ -18,7 +18,7 @@
 
 #include "msg_checker.hpp"
 #include "utils.hpp"
-
+#include <sys/wait.h>
 
 using namespace ft;
 
