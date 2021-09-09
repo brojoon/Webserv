@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
 	if (WEBSERVER->parsingConfig(argv[1]) == false)
 		return 1;
 
+
 	//ft::config_print();
 	set_signal();
 	WEBSERVER->initWebServer();
