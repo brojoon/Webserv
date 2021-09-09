@@ -44,9 +44,9 @@ std::string client::_autoindex()
 			stat(temp.c_str(), &state);
 			if (S_ISREG(state.st_mode))
 			{
-				ret += "<h4><a href=";
+				ret += "<h2><a href=";
 				ret += t2  + ent->d_name ;
-				ret += std::string(">  ") + ent->d_name + "</a></h4>";
+				ret += std::string(">  ") + ent->d_name + "</a></h2>";
 			}
 			else if (S_ISDIR(state.st_mode))
 			{
