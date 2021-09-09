@@ -192,6 +192,7 @@ bool Webserver::parsingConfig(const char *config_file)
 					throw "ERROR : location path is wrong";
 				location_path = *iter;
 				instance->server_list[index].getLocations()[location_path].setLocationPath(location_path);
+				instance->server_list[index].getLocations()[location_path].setAutoIndex(false);
 			}
 			else if (*iter == "autoindex")
 			{
