@@ -44,13 +44,13 @@ std::string client::_autoindex()
 			stat(temp.c_str(), &state);
 			if (S_ISREG(state.st_mode))
 			{
-				ret += "<a href=";
+				ret += "<h4><a href=";
 				ret += t2  + ent->d_name ;
-				ret += std::string(">  ") + ent->d_name + "</a></br>";
+				ret += std::string(">  ") + ent->d_name + "</a></h4>";
 			}
 			else if (S_ISDIR(state.st_mode))
 			{
-				ret += "<a href=";
+				ret += "<h1><a href=";
 				if (ent->d_name == std::string("."))
 					ret +=  t2 ;
 				else if (ent->d_name == std::string(".."))
@@ -63,7 +63,7 @@ std::string client::_autoindex()
 				}
 				else
 					ret += t2  + ent->d_name + "/";
-				ret += std::string(">  ") + ent->d_name + "/" + "</a></br>";
+				ret += std::string(">  ") + ent->d_name + "/" + "</a></h1>";
 			}
 			temp.clear();
 		}
