@@ -150,17 +150,21 @@ std::string	msg_checker::find_url(Server& server)
 msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std::string, std::string> &map, int port)
 {
 	std::string tem;
+	info.is_cgi = false;
+	info.host = map["Host"];
+	info.port = port;
 	info.method = ft::ft_strtok(firstline, " ");
 	std::string path = ft::ft_strtok(firstline, " ");
 	std::string http = ft::ft_strtok(firstline, "/");
 	info.version = ft::ft_strtok(firstline, "/");
+	if (path.size() > 2048)
+	{
+		info.status = "414";
+		return (info);
+	}
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
-	info.is_cgi = false;
-
-	info.host = map["Host"];
-	info.port = port;
-
+	
 	ft::split(map["Accept"], " ,", info.accept); // 값이 없으면 모든 미디어 유형 / 서버가 지원하지 않는경우 [406]
 	ft::split(map["Accept-Language"], " ,", info.accept_Language);	
 	ft::split(map["Accept-Encoding"], " ,", info.accept_Encoding); // 헤더에 따라 수용 가능한 응답을 보낼 수 없는 경우 서버는 [406(Not Acceptable)] 상태 코드와 함께 오류 응답
@@ -170,12 +174,12 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	if (ft::isknown(info.method) == false)
 	{
 		info.status = "501";
-		//throw (std::string("501"));
+		return (info);
 	}
 	else if (ft::isMethods(info.method) == false)
 	{
 		info.status = "405";
-		//throw (std::string("405"));
+		return (info);
 	}
 
 	std::map<int, Server>::iterator server_iter = WEBSERVER->getServerList().begin();
@@ -222,7 +226,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		if (server_iter == WEBSERVER->getServerList().end())
 		{
 			info.status = "400";
-			//throw (std::string("400"));
+			return (info);
 		}
 	}
 	std::cout << "root " << info.url_abs_path << std::endl;

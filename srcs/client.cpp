@@ -116,7 +116,6 @@ client::client(int socket, int port)
 				}
 			}
 			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
-			std::cout << "dddddddddd  " << _info.status <<  std::endl;
 			break;
 		}
 	}
@@ -127,10 +126,10 @@ std::string client::get_response()
 	std::string ret = "";
 	std::string _abs_path = "";
 	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
+	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
-	if (_info.status == "404" || _info.status == "403" || _info.status == "405")
+	if (_info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414")
 	{	
-		
 		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
 		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
 	}
