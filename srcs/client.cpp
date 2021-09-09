@@ -7,6 +7,73 @@
 #include <fcntl.h>
 #include <sstream>
 #include <fstream>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <iostream>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h> 
+#include <sys/stat.h> 
+#include <unistd.h>
+
+std::string client::_autoindex()
+{
+	DIR *dir;
+    struct dirent *ent;
+	std::string t = _info.location_uri;
+	std::string t2;
+	t2.assign(t, t.find_last_of("/"), t.size() - t.find_last_of("/"));
+	//t2.assign(t, 0, t.find_last_of("/") + 1);
+	//std::string path = "./";
+    std::string path = "." + t;
+	std::cout << t2 << std::endl;
+	dir = opendir (path.c_str());
+	char buf[1000];
+	struct stat state;
+	std::string temp;
+	std::string ret;
+	getcwd(buf,999);
+    if (dir != NULL) 
+	{
+		while ((ent = readdir (dir)) != NULL)
+		{//std::string(localhost:) + std::to_string(_info.port)
+			temp += path + std::string(ent->d_name);
+			stat(temp.c_str(), &state);
+			if (S_ISREG(state.st_mode))
+			{
+				ret += "<a href=";
+				ret += t2  + ent->d_name ;
+				ret += std::string(">  ") + ent->d_name + "</a></br>";
+			}
+			else if (S_ISDIR(state.st_mode))
+			{
+				ret += "<a href=";
+				if (ent->d_name == std::string("."))
+					ret +=  t2 ;
+				else if (ent->d_name == std::string(".."))
+				{
+					std::string test = t2;
+					test.pop_back();
+					std::string test2;
+					test2.assign(test, 0, test.find_last_of("/") + 1);
+					ret += test2;
+				}
+				else
+					ret += t2  + ent->d_name + "/";
+				ret += std::string(">  ") + ent->d_name + "/" + "</a></br>";
+			}
+			temp.clear();
+		}
+		//std::cout << ret << std::endl;
+		closedir (dir);
+    } 
+	else 
+        perror ("");
+	return ret;
+}
 
 void client::parse_msg(std::string &request_msg)
 {
@@ -122,11 +189,28 @@ client::client(int socket, int port)
 		}
 	}
 }
+//////////////////
 
 std::string client::get_response()
 {
+	std::ifstream		file;
+	std::stringstream	buffer;
+	std::string body = "";
+	unsigned int s;
 	std::string ret = "";
 	std::string _abs_path = "";
+	if (_info.autoindex && _info.status == "404")
+	{
+		ret += std::string("HTTP/1.1 ") + "200" + std::string(" ") + "OK" + std::string("\r\n");
+		ret += std::string("Server: 42Webserv/1.0\r\n");
+		ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
+		body = _autoindex();
+		s = body.size();
+		ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
+		ret += std::string("\r\n");
+		ret += body;
+		return ret;
+	}
 	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
 	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
@@ -152,9 +236,7 @@ std::string client::get_response()
 		_abs_path += "." + _info.url_abs_path;
 	}
 
-	std::ifstream		file;
-	std::stringstream	buffer;
-	std::string body = "";
+	
 
 	if (_info.is_cgi)
 	{
@@ -170,7 +252,7 @@ std::string client::get_response()
 		file.close();
 	}
 
-	unsigned int s = body.size();
+	s = body.size();
 	ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
 	ret += std::string("\r\n");
 	ret += body;

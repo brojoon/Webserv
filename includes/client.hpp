@@ -40,6 +40,7 @@ class client
 		//msg_chekcer 객체가 점검을 끝내고 반환하는 값을 info에 저장
 		checker_return_type _info;
 		std::string cgi_process();
+		std::string _autoindex();
 	public:
 		client(std::string request_msg);
 		client(int socket, int port);

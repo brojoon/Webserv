@@ -79,10 +79,15 @@ std::string	msg_checker::find_url(Server& server)
 			info.autoindex = i->second.getAutoIndex();
 			info.cgi_path = i->second.getCgiPath();	
 			if (i->second.getRoot() != "")
-				root = i->second.getRoot() + url;			
+			{
+				root = i->second.getRoot() + url;
+				info.location_uri += i->second.getRoot() + url;
+			}				
 			else
+			{
 				root = server.getRoot() + url;
-
+				info.location_uri += i->second.getRoot() + url;
+			}
 			if (i->second.getDifaultFiles().size() != 0)
 				check_indexfile(root, i->second.getDifaultFiles());
 			else
@@ -118,6 +123,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	std::string tem;
 	info.is_cgi = false;
 	info.autoindex = false;
+	info.location_uri = "";
 	info.host = map["Host"];
 	info.port = port;
 	info.method = ft::ft_strtok(firstline, " ");
