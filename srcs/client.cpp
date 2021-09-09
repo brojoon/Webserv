@@ -102,16 +102,17 @@ client::client(int socket, int port)
 	{
 		ret = read(socket, buf, 1);
 		socker_num = ret;
-		if (ret == 0)
+		if (ret <= 0)
 		{
 			//std::cout << "disconnected: " << socket << std::endl;
 			FD_CLR(socket, &WEBSERVER->getReadSet());
+			FD_CLR(socket, &WEBSERVER->getWriteSet());
 			close(socket);
 			WEBSERVER->getClientSockets().erase(socket);
 			// for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
-			// 	it != WEBSERVER->getClientSockets().end(); it++)
+			// it != WEBSERVER->getClientSockets().end(); it++)
 			// {
-			// 	std::cout << "아직 client sockets에 존재하는것들 : " << it->first << std::endl;
+			// 	std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
 			// }
 			return;
 		}

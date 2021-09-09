@@ -45,7 +45,8 @@ class Webserver
 		std::set<unsigned short> listen_port;
 		std::map<int, unsigned short> client_sockets; 
 		std::map<int, ServerFD> server_sockets; 
-		fd_set read_set, read_temp;
+		std::map<int, std::string> response_list;
+		fd_set read_set, read_temp, write_set, write_temp;
 	public:
 		virtual ~Webserver();
 		
@@ -55,6 +56,7 @@ class Webserver
 		std::map<int, unsigned short> &getClientSockets();
 		std::map<int, ServerFD> &getServerSockets();
 		fd_set &getReadSet();
+		fd_set &getWriteSet();
 		
 
 		bool parsingConfig(const char *config_file);
