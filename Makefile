@@ -19,7 +19,7 @@ $(NAME): $(OBJS)
 	@echo Compiling $(NAME)
 	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS) -fsanitize=address
 
-%.o: %.cpp
+%.o: %.cpp %.hpp
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 clean: 

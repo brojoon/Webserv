@@ -28,6 +28,8 @@ class msg_checker
 			std::map<int, std::string> error_pages;
 			std::string location_uri;
 
+
+
 			unsigned int max_body_size;
 			bool		autoindex;
 
