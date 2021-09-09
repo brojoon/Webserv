@@ -1,6 +1,26 @@
 #include "../includes/client.hpp"
 #include "../includes/utils.hpp"
 #include "../includes/Webserver.hpp"
+#include <signal.h>
+
+void	handleSignal(int signo)
+{
+	if (signo == SIGINT || SIGKILL)
+	{
+		delete WEBSERVER;
+		std::cout << std::endl;
+		exit(signo);
+	}
+	else
+		return;
+}
+
+void set_signal(void)
+{
+	signal(SIGKILL, handleSignal);
+	signal(SIGINT, handleSignal);
+	signal(SIGPIPE, handleSignal);
+}
 
 int main(int argc, char *argv[])
 {
@@ -15,7 +35,9 @@ int main(int argc, char *argv[])
 		return 1;
 
 	//ft::config_print();
+	set_signal();
 	WEBSERVER->initWebServer();
+	delete WEBSERVER;
 
 	return 0;
 }

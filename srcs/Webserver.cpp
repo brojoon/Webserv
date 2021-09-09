@@ -22,17 +22,17 @@ Webserver::~Webserver()
 	for (std::map<int, unsigned short>::iterator it = instance->client_sockets.begin();
 		it != instance->client_sockets.end(); it++)
 	{
-		FD_CLR(it->first, &read_set);
+		FD_CLR(it->first, &instance->read_set);
+		//std::cout << "deleted clt socket : " << it->first << std::endl;
 		close(it->first);
 	}
-	for (std::map<int, ServerFD>::iterator it = instance->client_sockets.begin();
-		it != instance->client_sockets.end(); it++)
+	for (std::map<int, ServerFD>::iterator it = instance->server_sockets.begin();
+		it != instance->server_sockets.end(); it++)
 	{
-		FD_CLR(it->first, &read_set);
+		FD_CLR(it->first, &instance->read_set);
+		//std::cout << "deleted serv socket : " << it->first << std::endl;
 		close(it->first);
-	}	
-	instance->server_sockets;
-	delete instance;
+	}
 }
 
 Webserver *Webserver::getInstance()
@@ -52,14 +52,19 @@ std::set<unsigned short> &Webserver::getListenPort()
 	return this->listen_port;
 }
 
-std::map<int, unsigned short> &getClientSockets()
+std::map<int, unsigned short> &Webserver::getClientSockets()
 {
 	return this->client_sockets;
 }
 
-std::map<int, ServerFD> &getServerSockets()
+std::map<int, ServerFD> &Webserver::getServerSockets()
 {
 	return this->server_sockets;
+}
+
+fd_set &Webserver::getReadSet()
+{
+	return this->read_set;
 }
 
 bool Webserver::parsingConfig(const char *config_file)
@@ -274,10 +279,7 @@ void Webserver::initWebServer()
 	int socketnum = 0;
 	bool connected;
 
-	//
-
-	fd_set read_set, read_temp;
-	FD_ZERO(&read_set);
+	FD_ZERO(&instance->read_set);
 	int fd_max;
 	int ret;
 	int port;
@@ -311,10 +313,10 @@ void Webserver::initWebServer()
 		{
 			error_handling("bind() error");
 		}
-		if(listen(socketnum, 20)==-1)
+		if(listen(socketnum, 1024)==-1)
 			error_handling("listen() error");
 		fcntl(instance->server_sockets[socketnum].socket, F_SETFL, O_NONBLOCK);
-		FD_SET(instance->server_sockets[socketnum].socket, &read_set);
+		FD_SET(instance->server_sockets[socketnum].socket, &instance->read_set);
 	}
 
 	fd_max = instance->server_sockets.rbegin()->first;
@@ -324,11 +326,11 @@ void Webserver::initWebServer()
 	{
 		timeout.tv_sec = 5;
 		timeout.tv_usec = 5000;
-		read_temp = read_set;
-		ret = select(fd_max + 1, &read_temp, NULL, NULL, &timeout);
+		instance->read_temp = instance->read_set;
+		ret = select(fd_max + 1, &instance->read_temp, NULL, NULL, &timeout);
 		if (ret < 0)
 		{
-			printf("some error detached");
+			printf("select error detached");
 			break;
 		}
 		else if (ret == 0)
@@ -340,7 +342,7 @@ void Webserver::initWebServer()
 		{
 			for (int i = 0; i < fd_max + 1; i++)
 			{
-				if (FD_ISSET(i, &read_temp))
+				if (FD_ISSET(i, &instance->read_temp))
 				{
 					connected = false;
 					for (std::map<int, ServerFD>::iterator it = instance->server_sockets.begin();
@@ -348,12 +350,12 @@ void Webserver::initWebServer()
 					{
 						if (it->first == i)
 						{
-							std::cout << "new clnt is connected" << std::endl;
+							//std::cout << "new clnt is connected" << std::endl;
 							clnt_adr_size = sizeof(clnt_adr);
 							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
 							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
-							std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
-							FD_SET(clnt_sock, &read_set);
+							//std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
+							FD_SET(clnt_sock, &instance->read_set);
 							if (fd_max < instance->client_sockets.rbegin()->first)
 								fd_max = clnt_sock;
 							connected = true;
@@ -362,11 +364,11 @@ void Webserver::initWebServer()
 					}
 					if (connected != true) //read message
 					{
-						std::cout << "통신에 사용된 client socket : " << i << std::endl;
+						//std::cout << "통신에 사용된 client socket : " << i << std::endl;
 						str.clear();
 						port = ntohs(instance->client_sockets[i]);
-						std::cout << "port : " << port << std::endl;
-						client obj(i, port, &read_set);
+						//std::cout << "port : " << port << std::endl;
+						client obj(i, port);
 						if (obj.getSockNum() == 0)
 							continue;
 						str = obj.get_response();

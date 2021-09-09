@@ -1,4 +1,5 @@
 #include "../includes/client.hpp"
+#include "../includes/Webserver.hpp"
 #include <cstdlib>
 #include <cstdio>
 # include <sys/types.h>
@@ -22,7 +23,7 @@ void client::parse_msg(std::string &request_msg)
 	}
 }
 
-client::client(int socket, int port, fd_set *read_set)
+client::client(int socket, int port)
 {
 	int ret, bufsize = 2560;
 	char buf[bufsize];
@@ -34,10 +35,15 @@ client::client(int socket, int port, fd_set *read_set)
 		socker_num = ret;
 		if (ret == 0)
 		{
-			std::cout << "disconnected: " << socket << std::endl;
-			FD_CLR(socket, read_set);
+			//std::cout << "disconnected: " << socket << std::endl;
+			FD_CLR(socket, &WEBSERVER->getReadSet());
 			close(socket);
 			WEBSERVER->getClientSockets().erase(socket);
+			// for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
+			// 	it != WEBSERVER->getClientSockets().end(); it++)
+			// {
+			// 	std::cout << "아직 client sockets에 존재하는것들 : " << it->first << std::endl;
+			// }
 			return;
 		}
 		buf[ret] = 0;
