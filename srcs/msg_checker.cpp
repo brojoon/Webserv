@@ -1,6 +1,49 @@
 #include "../includes/msg_checker.hpp"
 #include "../includes/Server.hpp"
 
+//경로만 오면 인덱스 붙여주고 경로에 파일이 없으면 에러
+void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_index)
+{
+	std::string tem = root;
+	std::string tem_index;
+
+	// 파일명이 있을때
+	if (tem.find('.') != std::string::npos)
+	{
+		tem = "." + tem;
+		if (access(tem.c_str(), 0) == 0)
+			return ;
+		else
+		{
+			// error 코드
+			info.status = "404";
+			//throw (std::string("404"));
+			return ;	
+		}
+	}
+	else // 경로만 있을때
+	{
+		if (tem.back() != '/')
+			tem.push_back('/');
+		//index가 있는지 없지 if문 만들고 그안에 넣기
+		for (std::size_t i = 0;  i != v_index.size(); i++)
+		{
+			tem_index = tem + v_index[i];
+			tem_index = "." + tem_index;
+			if (access(tem_index.c_str(), 0) == 0)
+			{
+				root.clear();
+				root = tem_index.substr(1);		
+				return ;			
+			}
+			tem_index.clear();
+		}
+		info.status = "404";
+		//throw (std::string("404"));
+		return ;
+	}
+}
+
 /*  잘못된 리다이 렉션
 void msg_checker::find_redirect_url(Server& server, std::string& root, std::string redirect_Uri)
 {
@@ -38,10 +81,11 @@ std::string	msg_checker::find_url(Server& server)
 	const std::string url = info.url_abs_path;
 	std::string redirect_Uri;
 	std::string root;
+	int idx;
 	std::vector<std::string> server_index = server.getDifaultFiles();
 	
 	iter start = server.getLocations().rbegin();
-	iter end = server.getLocations().rend();	
+	iter end = server.getLocations().rend();
 	for (iter i = start; i != end; i++)
 	{
 		std::string location = i->first;
@@ -55,25 +99,30 @@ std::string	msg_checker::find_url(Server& server)
 					if (i->second.getLimitExcept()[j] == info.method)
 						break ;
 				if (j == i->second.getLimitExcept().size())
+				{		
 					info.status = "403";
+					//throw (std::string("404"));
+				}			
 			}
 			if ((redirect_Uri = i->second.getRedirection()) != "")
 			{
 				root = redirect_Uri;
 				info.status = "301";
-				return (root);					
+				return (root);				
 			}
+
 			info.cgi_path = i->second.getCgiPath();	
 			if (i->second.getRoot() != "")
 				root = i->second.getRoot() + url;			
 			else
-				root = server.getRoot() + url;	
+				root = server.getRoot() + url;
+
 			if (i->second.getDifaultFiles().size() != 0)
 				check_indexfile(root, i->second.getDifaultFiles());
 			else
 				check_indexfile(root, server_index);
-			int idx = root.find('.');
-			info.extention = root.substr(idx);
+			if ((idx = root.find('.')) != std::string::npos)
+				info.extention = root.substr(idx);
 			if (info.cgi_path != "")
 			{
 				std::vector<std::string> cgi = i->second.getCigExcept();
@@ -107,6 +156,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.version = ft::ft_strtok(firstline, "/");
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
+	info.is_cgi = false;
 
 	info.host = map["Host"];
 	info.port = port;
@@ -118,10 +168,16 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 
 	// 허용 method가 아닌경우 에러 메세지
 	if (ft::isknown(info.method) == false)
+	{
 		info.status = "501";
+		//throw (std::string("501"));
+	}
 	else if (ft::isMethods(info.method) == false)
+	{
 		info.status = "405";
-	//
+		//throw (std::string("405"));
+	}
+
 	std::map<int, Server>::iterator server_iter = WEBSERVER->getServerList().begin();
 	for (; server_iter != WEBSERVER->getServerList().end(); server_iter++)
 	{
@@ -132,6 +188,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 			{
 				if (*listen_iter == info.port)
 				{
+					info.error_pages = server_iter->second.getErrorPages();
 					tem = find_url(server_iter->second);
 					info.url_abs_path.clear();
 					info.url_abs_path = tem;
@@ -152,6 +209,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 			{
 				if (*listen_iter == info.port)
 				{
+					info.error_pages = server_iter->second.getErrorPages();
 					tem = find_url(server_iter->second);
 					info.url_abs_path.clear();
 					info.url_abs_path = tem;
@@ -162,9 +220,11 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 				break ;
 		}
 		if (server_iter == WEBSERVER->getServerList().end())
-			info.status = "400";	
+		{
+			info.status = "400";
+			//throw (std::string("400"));
+		}
 	}
-
 	std::cout << "root " << info.url_abs_path << std::endl;
 	return (info);
 }

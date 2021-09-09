@@ -25,7 +25,7 @@ class msg_checker
 			std::string cgi_path;
 			std::string extention;
 			bool		is_cgi;
-			
+			std::map<int, std::string> error_pages;
 
 			std::vector<std::string> accept;
 			std::vector<std::string> accept_Language;

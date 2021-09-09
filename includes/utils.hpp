@@ -52,6 +52,17 @@ namespace ft
 			~mime();
 			std::string get_mime_type(std::string extension);
 	};
+
+	class err
+	{
+		private:
+			std::map<std::string, std::string> _err;
+
+		public:
+			err();
+			~err();
+			std::string get_err(std::string status);
+	};
 }
 
 #endif

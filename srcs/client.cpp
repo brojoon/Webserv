@@ -116,6 +116,7 @@ client::client(int socket, int port)
 				}
 			}
 			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
+			std::cout << "dddddddddd  " << _info.status <<  std::endl;
 			break;
 		}
 	}
@@ -123,18 +124,42 @@ client::client(int socket, int port)
 
 std::string client::get_response()
 {
-	std::string ret;
-	std::string _status = std::string("200");
-	ret += std::string("HTTP/1.1 ") + _status + std::string(" OK\r\n");
-	ret += std::string("Content-type: text/html; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
-	std::string _abs_path = "." + _info.url_abs_path;
+	std::string ret = "";
+	std::string _abs_path = "";
+	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
+	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
+	if (_info.status == "404" || _info.status == "403" || _info.status == "405")
+	{	
+		
+		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
+		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
+	}
+	else if (_info.status == "301")
+	{
+		ret += std::string("Location: ") + _info.url_abs_path + std::string("\r\n");
+		ret += std::string("\r\n");
+		return ret;
+	}
+	else if (_info.status == "501")
+	{
+		ret += std::string("\r\n");
+		return ret;
+	}
+	else
+	{
+		ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
+		_abs_path += "." + _info.url_abs_path;
+	}
 	int fd = open(_abs_path.c_str(), O_RDONLY);
 	char buf[1000];
 	int read_size;
 	std::string body;
 
 	if (_info.is_cgi)
+	{
 		body = cgi_process();
+		_info.is_cgi = false;
+	}
 	else
 	{
 		while ((read_size = read(fd, buf, 999)) != 0)
@@ -233,8 +258,6 @@ std::string client::cgi_process()
     return ret;
 }
 
-
-
 msg_checker::msg_checker()
 {
 	info.status = "200";
@@ -242,46 +265,6 @@ msg_checker::msg_checker()
 
 msg_checker::~msg_checker() {}
 
-//경로만 오면 인덱스 붙여주고 경로에 파일이 없으면 에러
-void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_index)
-{
-	std::string tem = root;
-	std::string tem_index;
-
-	// 파일명이 있을때
-	if (tem.find('.') != std::string::npos)
-	{
-		tem = "." + tem;
-		if (access(tem.c_str(), 0) == 0)
-			return ;
-		else
-		{
-			// error 코드
-			info.status = "404";
-			return ;	
-		}
-	}
-	else // 경로만 있을때
-	{
-		if (tem.back() != '/')
-			tem.push_back('/');
-		//index가 있는지 없지 if문 만들고 그안에 넣기
-		for (std::size_t i = 0;  i != v_index.size(); i++)
-		{
-			tem_index = tem + v_index[i];
-			tem_index = "." + tem_index;
-			if (access(tem_index.c_str(), 0) == 0)
-			{
-				root.clear();
-				root = tem_index.substr(1);		
-				return ;			
-			}
-			tem_index.clear();
-		}
-		info.status = "404";
-		return;
-	}
-}
 
 int client::getSockNum()
 {
