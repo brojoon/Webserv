@@ -390,8 +390,15 @@ void Webserver::initWebServer()
 				if (FD_ISSET(i, &instance->write_temp) && !FD_ISSET(i, &instance->read_temp))
 				{
 					//std::cout << "client socket write : " << i << std::endl;
-					write(i, response_list[i].c_str(), response_list[i].size());
-					FD_CLR(i, &instance->write_set);
+					if (write(i, response_list[i].c_str(), response_list[i].size()) <= 0)
+					{
+						FD_CLR(i, &instance->write_set);
+						FD_CLR(i, &instance->read_set);
+						close(i);
+						instance->client_sockets.erase(i);
+					}
+					else
+						FD_CLR(i, &instance->write_set);
 					response_list[i].clear();
 				}
 			}
