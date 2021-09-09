@@ -121,26 +121,20 @@ client::client(int socket, int port)
 	}
 }
 
-// length 스트링의 넣기 다쓰고 i < 17 까지 free해주기/
-//char **env = ft::env("length", _info.extention, _info.url_abs_path, _info.query,
-//		_info.method,_info.host, std::to_string(_info.port), _info.version).get_env();
-
 std::string client::get_response()
 {
 	std::string ret;
 	std::string _status = std::string("200");
-	ret += std::string("HTTP/1.1 ") + _status + std::string("OK\r\n");
+	ret += std::string("HTTP/1.1 ") + _status + std::string(" OK\r\n");
 	ret += std::string("Content-type: text/html; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
 	std::string _abs_path = "." + _info.url_abs_path;
 	int fd = open(_abs_path.c_str(), O_RDONLY);
 	char buf[1000];
 	int read_size;
 	std::string body;
-	if (!_info.cgi_path.empty())
-	{
-		std::cout << "cgi" << std::endl;
+
+	if (_info.is_cgi)
 		body = cgi_process();
-	}
 	else
 	{
 		while ((read_size = read(fd, buf, 999)) != 0)
@@ -172,7 +166,6 @@ std::string client::get_location_header()
 	return ret;
 }
 
-
 std::string client::cgi_process()
 {
     std::string ret;
@@ -180,20 +173,11 @@ std::string client::cgi_process()
     int     pip[2];
     argv[0] = strdup(_info.cgi_path.c_str());
     argv[1] = strdup(("." + _info.url_abs_path).c_str());
-	//std::cout << argv[0] << std::endl << argv[1] << std::endl;
 	argv[2] = NULL;
 
-    //argv[0] = "";
-    //argv[1] = _info.url_abs_path;
-    //argv[0] = strdup("/bin/ls");
-    //argv[1] = NULL;
-    //argv[2] = NULL;
-    char **env = ft::env("2000", _info.extention, _info.url_abs_path, _info.query,\
+    char **env = ft::env("0", _info.extention, _info.url_abs_path, _info.query,\
     		_info.method,_info.host, std::to_string(_info.port), _info.version).get_env();
 
-	
-	for (int i =0 ; i < 17; i++)
-		std::cout << env[i] << std::endl;
     int nbytes;
     char inbuf[200];
     if (pipe(pip) != 0)
@@ -208,7 +192,6 @@ std::string client::cgi_process()
         dup2(pip[1], 1);
         close(pip[0]);
         close(pip[1]);
-		write(2, "dddd\n", 5);
         if (-1 == execve(argv[0], argv, env))
 			write(2, "execve error\n", 13);
         exit(-1);
@@ -219,7 +202,6 @@ std::string client::cgi_process()
         
         close(pip[1]);
 		waitpid(pid, &status, 0);
-		std::cout << "11111111111111" << std::endl;
         while ((nbytes = read(pip[0], inbuf, 199)) != 0)
         {
             inbuf[nbytes] = 0;
@@ -232,13 +214,10 @@ std::string client::cgi_process()
         std::cout << "fork error " << std::endl;
         exit (1);
     }
-    /*free(argv[0]);
+    free(argv[0]);
     free(argv[1]);
-    for (int i = 0; i < 18; i++)
-        free(env[i]);*/
-	/*std::cout << "*********************** " << std::endl;
-	std::cout << ret << std::endl;
-	std::cout << "*********************** " << std::endl;*/
+    for (int i = 0; i < 17; i++)
+        free(env[i]);
 
     std::string::size_type idx = 0;
     while (idx < ret.size())
