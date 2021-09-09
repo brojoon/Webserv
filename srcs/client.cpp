@@ -1,4 +1,5 @@
 #include "../includes/client.hpp"
+#include "../includes/Webserver.hpp"
 #include <cstdlib>
 #include <cstdio>
 # include <sys/types.h>
@@ -29,8 +30,22 @@ client::client(int socket, int port)
 	std::string str;
 
 	while (1)
-	{	
+	{
 		ret = read(socket, buf, 1);
+		socker_num = ret;
+		if (ret == 0)
+		{
+			//std::cout << "disconnected: " << socket << std::endl;
+			FD_CLR(socket, &WEBSERVER->getReadSet());
+			close(socket);
+			WEBSERVER->getClientSockets().erase(socket);
+			// for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
+			// 	it != WEBSERVER->getClientSockets().end(); it++)
+			// {
+			// 	std::cout << "아직 client sockets에 존재하는것들 : " << it->first << std::endl;
+			// }
+			return;
+		}
 		buf[ret] = 0;
 		str += std::string(buf);
 		if (ft_contain(str, "\r\n\r\n"))// 헤더의 끝
@@ -287,4 +302,9 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 		info.status = "404";
 		return;
 	}
+}
+
+int client::getSockNum()
+{
+	return this->socker_num;
 }

@@ -45,6 +45,7 @@ class client
 		client(int socket, int port);
 		std::string get_response();
 		std::string get_location_header();
+		int getSockNum();
 };
 
 #endif
