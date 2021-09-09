@@ -2,9 +2,11 @@
 #include "../includes/Webserver.hpp"
 #include <cstdlib>
 #include <cstdio>
-# include <sys/types.h>
-# include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <fcntl.h>
+#include <sstream>
+#include <fstream>
 
 void client::parse_msg(std::string &request_msg)
 {
@@ -149,10 +151,10 @@ std::string client::get_response()
 		ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
 		_abs_path += "." + _info.url_abs_path;
 	}
-	int fd = open(_abs_path.c_str(), O_RDONLY);
-	char buf[1000];
-	int read_size;
-	std::string body;
+
+	std::ifstream		file;
+	std::stringstream	buffer;
+	std::string body = "";
 
 	if (_info.is_cgi)
 	{
@@ -161,19 +163,14 @@ std::string client::get_response()
 	}
 	else
 	{
-		while ((read_size = read(fd, buf, 999)) != 0)
-		{
-			buf[read_size] = 0;
-			body += std::string(buf);
-		}
+		file.open(_abs_path.c_str(), std::ifstream::in);
+		file.is_open();
+		buffer << file.rdbuf();
+		body = buffer.str();
+		file.close();
 	}
-	close(fd);
+
 	unsigned int s = body.size();
-	/*for (std::string::iterator i = body.begin(); i != body.end(); i++)//개행문자의 개수 다 빼줘야할듯
-	{
-		if (*i == '\n' || *i == '\r')
-			s--;
-	}*/ 
 	ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
 	ret += std::string("\r\n");
 	ret += body;

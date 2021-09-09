@@ -17,7 +17,6 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 		{
 			// error 코드
 			info.status = "404";
-			//throw (std::string("404"));
 			return ;	
 		}
 	}
@@ -39,41 +38,9 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 			tem_index.clear();
 		}
 		info.status = "404";
-		//throw (std::string("404"));
 		return ;
 	}
 }
-
-/*  잘못된 리다이 렉션
-void msg_checker::find_redirect_url(Server& server, std::string& root, std::string redirect_Uri)
-{
-	const std::string url = info.url_abs_path;
-	Location redirect_Location;
-	std::map<std::string, Location> tem_map;
-	std::vector<std::string> server_index = server.getDifaultFiles();
-
-	tem_map = server.getLocations();
-
-	if (tem_map.find(redirect_Uri) != tem_map.end())
-	{
-		
-		redirect_Location = tem_map[redirect_Uri];
-		if (redirect_Location.getRoot() != "")
-		{
-			root = redirect_Location.getRoot() + redirect_Uri;
-		}
-		else
-			root = server.getRoot() + redirect_Uri;	
-		info.status = "301";
-		if (redirect_Location.getDifaultFiles().size() != 0)
-			check_indexfile(root, redirect_Location.getDifaultFiles());
-		else
-			check_indexfile(root, server_index);
-	}
-	else
-		info.status = "404";
-}
-*/
 
 std::string	msg_checker::find_url(Server& server)
 {
@@ -101,7 +68,6 @@ std::string	msg_checker::find_url(Server& server)
 				if (j == i->second.getLimitExcept().size())
 				{		
 					info.status = "403";
-					//throw (std::string("404"));
 				}			
 			}
 			if ((redirect_Uri = i->second.getRedirection()) != "")
@@ -110,7 +76,7 @@ std::string	msg_checker::find_url(Server& server)
 				info.status = "301";
 				return (root);				
 			}
-
+			info.autoindex = i->second.getAutoIndex();
 			info.cgi_path = i->second.getCgiPath();	
 			if (i->second.getRoot() != "")
 				root = i->second.getRoot() + url;			
@@ -151,6 +117,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 {
 	std::string tem;
 	info.is_cgi = false;
+	info.autoindex = false;
 	info.host = map["Host"];
 	info.port = port;
 	info.method = ft::ft_strtok(firstline, " ");
@@ -193,6 +160,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 				if (*listen_iter == info.port)
 				{
 					info.error_pages = server_iter->second.getErrorPages();
+					info.max_body_size = server_iter->second.getClientMaxBodySize();
 					tem = find_url(server_iter->second);
 					info.url_abs_path.clear();
 					info.url_abs_path = tem;
@@ -214,6 +182,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 				if (*listen_iter == info.port)
 				{
 					info.error_pages = server_iter->second.getErrorPages();
+					info.max_body_size = server_iter->second.getClientMaxBodySize();
 					tem = find_url(server_iter->second);
 					info.url_abs_path.clear();
 					info.url_abs_path = tem;

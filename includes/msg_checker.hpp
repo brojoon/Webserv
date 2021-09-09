@@ -27,6 +27,9 @@ class msg_checker
 			bool		is_cgi;
 			std::map<int, std::string> error_pages;
 
+			unsigned int max_body_size;
+			bool		autoindex;
+
 			std::vector<std::string> accept;
 			std::vector<std::string> accept_Language;
 			std::vector<std::string> accept_Encoding;
