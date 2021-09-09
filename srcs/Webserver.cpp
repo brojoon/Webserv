@@ -302,6 +302,8 @@ void Webserver::initWebServer()
 		it != instance->listen_port.end(); it++)
 	{
 		socketnum = socket(PF_INET, SOCK_STREAM, 0);
+		int opt = 1;
+		setsockopt(socketnum, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)); 
 		instance->server_sockets[socketnum];
 		instance->server_sockets[socketnum].socket = socketnum;
 		memset(&instance->server_sockets[socketnum].serv_adr, 0, sizeof(instance->server_sockets[socketnum].serv_adr));
