@@ -12,6 +12,5 @@
         echo '[아이디] : '.$_GET['id']. '<br/>';
         echo '[password] : '.$_GET['password'].' <br/>';
     ?>
-    
 </body>
 </html>

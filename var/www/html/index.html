@@ -3,7 +3,19 @@
 		<title>Document</title>
 	</head>
 	<body>
-		<h1>server port 20000 or 21000</h1>
-		<img src="./ex.jpg">
+		<br/>
+		<form method="POST" action="./php/index.php">
+			<input type="text" name="id" placeholder="id"/>
+			<input type="text" name="password" placeholder="password"/>
+			<input type="submit" value="입력" />
+		</form>
+		<h2> 파일 업로드 </h2>
+		<form enctype='multipart/form-data' action='./index.html' method='POST'>
+		<p>
+			<label>File: </label><input type='file' name='file' /><br/><br/>
+			<input type='submit' value="upload" name='upload' />
+		</p>
+		<br/>
+
 	</body>
 </html>

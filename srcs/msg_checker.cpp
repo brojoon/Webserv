@@ -143,13 +143,14 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.same_location = false;
 	info.autoindex = false;
 	info.location_uri = "";
+	info.body_size = 0;
 	info.host = map["Host"];
 	info.port = port;
 	info.method = ft::ft_strtok(firstline, " ");
 	std::string path = ft::ft_strtok(firstline, " ");
 	std::string http = ft::ft_strtok(firstline, "/");
 	info.version = ft::ft_strtok(firstline, "/");
-
+	//std::cout << "path " <<  path << std::endl;
 	if (path.size() > 2048)
 	{
 		info.status = "414";
@@ -173,6 +174,16 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	{
 		info.status = "405";
 		return (info);
+	}
+
+	if (info.method == "POST")
+	{
+		info.body =  map["body"];
+		info.query = info.body;
+		info.body_size = 0;
+		//if (info.body_size == 0)
+		//	info.status = "204";
+		std::cout << "[body]\n" <<info.body << std::endl;
 	}
 
 	std::map<int, Server>::iterator server_iter = WEBSERVER->getServerList().begin();
@@ -227,3 +238,4 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	std::cout << "root " << info.url_abs_path << std::endl;
 	return (info);
 }
+
