@@ -134,27 +134,6 @@ client::client(int socket, int port)
 			}
 			else
 				flag[socket] = true;
-			/*
-			int length = atoi(_header_field["Content-Lentgth"].c_str());
-			ret = 0;
-			while (length > 0)
-			{
-				ret = read(socket, buf, bufsize);
-				length -= ret;
-				buf[ret] = 0;
-				content += std::string(buf);
-			}
-			for (std::string::iterator i = content.begin(); i != content.end(); i++)
-				if (*i == '\n' || *i == '\r')
-					length++;
-			while (length > 0)
-			{
-				ret = read(socket, buf, bufsize);
-				length -= ret;
-				buf[ret] = 0;
-				content += std::string(buf);
-			}
-			*/
 		}
 		else if (_header_field.find("Transfer-Encoding") != _header_field.end())
 		{
@@ -210,11 +189,9 @@ client::client(int socket, int port)
 		return ;
 	}
 }
-//////////////////
 
 std::string client::get_response()
 {
-	std::cout << flag[socker_num] << std::endl;
 	if (!flag[socker_num])
 		return std::string();
 	std::ifstream		file;
@@ -259,13 +236,9 @@ std::string client::get_response()
 		ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
 		_abs_path += "." + _info.url_abs_path;
 	}
-
-	
-
 	if (_info.is_cgi)
 	{
 		body = cgi_process();
-		std::cout << body << std::endl;
 		_info.is_cgi = false;
 	}
 	else
@@ -281,6 +254,7 @@ std::string client::get_response()
 	ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
 	ret += std::string("\r\n");
 	ret += body;
+
 	return ret;
 }
 

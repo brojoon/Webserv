@@ -386,7 +386,7 @@ void Webserver::initWebServer()
 						std::string t = obj.get_response();
 						if (t.empty())
 							continue;
-						response_list[i] = obj.get_response();
+						response_list[i] = t;
 						FD_SET(i, &instance->write_set);
 					}
 				}
