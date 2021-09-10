@@ -46,12 +46,14 @@ class client
 		std::string cgi_process();
 		std::string _autoindex();
 		std::map<int, bool> flag;
+		bool is_read_end;
 	public:
 		client(std::string request_msg);
 		client(int socket, int port);
 		std::string get_response();
 		void 		delet_file();
 		int getSockNum();
+		bool isReadEnd();
 };
 
 #endif

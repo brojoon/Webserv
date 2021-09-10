@@ -114,6 +114,7 @@ client::client(int socket, int port)
 	pos = ft_contain(map[socket], "\r\n\r\n");
 	ret = recv(socket, buf, bufsize - 1, 0);
 	socket_num = socket;
+	is_read_end = false;
 	if (ret <= 0)
 	{
 		//std::cout << "disconnected: " << socket << std::endl;
@@ -127,6 +128,7 @@ client::client(int socket, int port)
 		// 	std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
 		// }
 		std::cout << "ret 이 음수" << std::endl;
+		is_read_end = true;
 		return;
 	}
 	buf[ret] = 0;
@@ -351,4 +353,9 @@ msg_checker::~msg_checker() {}
 int client::getSockNum()
 {
 	return this->socket_num;
+}
+
+bool client::isReadEnd()
+{
+	return this->is_read_end;
 }
