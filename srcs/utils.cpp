@@ -148,11 +148,14 @@ namespace ft
 			ret = src;
 			src.clear();
 		}
-		else
+		else//aaa?   end = 3 start = 0
 		{
 			ret = src.substr(start, (end-1) -  start + 1);
 			end = src.find_first_not_of(deli, end);
-			src = src.substr(end, src.size() - end);
+			if (end == std::string::npos)
+				src.clear();
+			else
+				src = src.substr(end, src.size() - end);
 		}
 		return ret;//빈문자열이 return 될때가 종료조건
 	}

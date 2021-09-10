@@ -133,50 +133,24 @@ client::client(int socket, int port)
 				return ;
 			}
 			else
+			{
+				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
 				flag[socket] = true;
+			}
 		}
 		else if (_header_field.find("Transfer-Encoding") != _header_field.end())
 		{
-			/*
-			std::string temp;
-			unsigned int chunk;
-			while (1)
+			if (map[socket][map[socket].size() - 1] == '0')
 			{
-				while (1)
-				{
-					ret = read(socket, buf, 1);
-					buf[ret] = 0;
-					temp += std::string(buf);
-					if (atoi(temp.c_str()) == 0)
-					{
-						chunk = 0;
-						break;
-					}
-					if (temp.find("\n") != std::string::npos) //find("\r\n")이 아니라 find("\n")이 맞음
-					{
-						chunk = atoi(temp.c_str());
-						break;
-					}
-				}
-				temp.clear();
-				if (chunk == 0)
-					break;
-				while (chunk > 0)
-				{
-					ret = read(socket, buf, 1);
-					if (ret == 1 && (buf[0] == '\n' || buf[0] == '\r'))
-						continue;;
-					buf[ret] = 0;
-					content += std::string(buf);
-					chunk -= ret;
-				}
-				if (1 == recv(socket, buf, 1, MSG_PEEK | MSG_DONTWAIT))
-				{
-					buf[recv(socket, buf, 1, 0)] = 0;
-					content += buf;
-				}
+				chunk_check(map[socket], pos);
+				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
+				flag[socket] = true;
 			}
-			*/
+			else
+			{
+				flag[socket] = false;
+				return ;
+			}
 		}
 		else
 			flag[socket] = true;
@@ -190,8 +164,27 @@ client::client(int socket, int port)
 	}
 }
 
+void client::chunk_check(std::string &src, int pos)
+{
+	int start = pos;
+	int end = src.find_first_of("\r\n", start);
+	long len;
+	while (1)
+	{
+		break;
+		end = src.find_first_of("\n", start);
+		len = ft::hexaStringToLong(src.substr(start, end - start));
+		start = end + 1;
+		end = src.find_first_of("\r", start) - 2;
+		if (len == (end - start + 1))
+			std::cout << "ok" << std::endl;
+		else
+			std::cout << "error" << std::endl;
+	}
+}
 std::string client::get_response()
 {
+	std::cout << flag[socker_num] << std::endl;
 	if (!flag[socker_num])
 		return std::string();
 	std::ifstream		file;
