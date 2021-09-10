@@ -33,7 +33,7 @@ class client
 		typedef msg_checker::return_type checker_return_type;
 
 	private:
-		int socker_num;
+		int socket_num;
 		//리퀘스트 메시지 파싱
 		void parse_msg(std::string &request_msg);
 		//리퀘스트 메시지 파싱해서 아래의 두 변수에 저장

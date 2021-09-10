@@ -121,7 +121,7 @@ namespace ft
 		static int end = 0;
 
 		const int _size = src.size();
-		int start = ((end == 0) ? 0 : end + 1);
+		int start = ((end == 0) ? 0 : end + 2);
 		std::string ret;
 
 		if (end == std::string::npos)
@@ -130,11 +130,11 @@ namespace ft
 			ret = "\n\n";
 			return ret;
 		}
-		end = src.find_first_of("\n", start);
+		end = src.find_first_of("\r", start);
 		if (end == std::string::npos)//last line
 			ret = src.substr(start, _size - start);
 		else
-			ret = src.substr(start, (end-1) -  start + 1);//개행문자 빼고 substr
+			ret = src.substr(start, end -  start);//개행문자 빼고 substr
 		return ret;
 	}
 
