@@ -46,7 +46,6 @@ class client
 		std::string cgi_process();
 		std::string _autoindex();
 		std::map<int, bool> flag;
-		void chunk_check(std::string &src, int pos);
 	public:
 		client(std::string request_msg);
 		client(int socket, int port);

@@ -210,11 +210,16 @@ namespace ft
 		int temp;
 		for (int i = 0; i < size; i++)
 		{
-			if (str[i] < 'a')
-				temp = str[i] - '0';
+			if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'f') || (str[i] >= 'A' && str[i] <= 'F'))
+			{
+				if (str[i] < 'a')
+					temp = str[i] - '0';
+				else
+					temp = str[i] - 'a' + 10;
+				ret += temp * pow(16, size - i -1);
+			}
 			else
-				temp = str[i] - 'a' + 10;
-			ret += temp * pow(16, size - i -1);
+				break;
 		}
 		return ret;
 	}

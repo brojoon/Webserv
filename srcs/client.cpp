@@ -74,6 +74,35 @@ void client::parse_msg(std::string &request_msg)
 	}
 }
 
+std::string chunk_check(std::string &src, int pos)
+{
+	int start = pos;
+	int end;
+	long len;
+	std::string body;
+
+	while (1)
+	{
+		end = src.find_first_of("\r", start) + 1;
+		len = hexaStringToLong(src.substr(start, end - start -1));
+		std::cout << "start : " << start << "   end: " << end << std::endl;
+		std::cout << "len : " << len << std::endl;
+		if (end == std::string::npos || (src[start] == '0' && start == src.size() - 1))
+			break;
+		start = end + 1;
+		end = src.find_first_of("\r", start) - 1;
+		std::cout << "start : " << start << "   end: " << end << std::endl;
+		if (len == (end - start + 1))
+			std::cout << "ok\n" << std::endl;
+		else
+			std::cout << "error\n" << std::endl;
+		body += src.substr(start, end - start + 1);
+		start = end + 3;
+	}
+	return body;
+}
+
+
 client::client(int socket, int port)
 {
 	std::cout << "constructor" << std::endl;
@@ -124,8 +153,7 @@ client::client(int socket, int port)
 		{
 			if (map[socket][map[socket].size() - 1] == '0')
 			{
-				chunk_check(map[socket], pos);
-				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
+				_header_field["body"] =  chunk_check(map[socket], pos);
 				flag[socket] = true;
 			}
 			else
@@ -146,24 +174,7 @@ client::client(int socket, int port)
 	}
 }
 
-void client::chunk_check(std::string &src, int pos)
-{
-	int start = pos;
-	int end = src.find_first_of("\r\n", start);
-	long len;
-	while (1)
-	{
-		break;
-		end = src.find_first_of("\n", start);
-		len = ft::hexaStringToLong(src.substr(start, end - start));
-		start = end + 1;
-		end = src.find_first_of("\r", start) - 2;
-		if (len == (end - start + 1))
-			std::cout << "ok" << std::endl;
-		else
-			std::cout << "error" << std::endl;
-	}
-}
+
 std::string client::get_response()
 {
 	std::cout << flag[socker_num] << std::endl;
