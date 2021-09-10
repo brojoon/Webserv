@@ -27,7 +27,7 @@ class msg_checker
 			bool		is_cgi;
 			std::map<int, std::string> error_pages;
 			std::string location_uri;
-
+			bool		same_location;
 
 
 			unsigned int max_body_size;
