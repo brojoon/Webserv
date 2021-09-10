@@ -8,17 +8,21 @@
 #include <exception>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <map>
-#include <unistd.h>
-#include <cstring>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-
+#include <sys/wait.h>
+#include <unistd.h>
+#include <map>
+#include <sstream>
+#include <fstream>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <cstring>
+#include <algorithm>
 #include "msg_checker.hpp"
 #include "utils.hpp"
-#include <sys/wait.h>
 
 using namespace ft;
 
@@ -46,7 +50,7 @@ class client
 		client(std::string request_msg);
 		client(int socket, int port);
 		std::string get_response();
-		std::string get_location_header();
+		void 		delet_file();
 		int getSockNum();
 };
 

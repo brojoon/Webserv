@@ -139,24 +139,27 @@ namespace ft
 	}
 
 	std::string ft_strtok(std::string &src, std::string deli)//인자로 들어온 src를 참조만 하는게 아니라, 편집도 함
-	{
-		int start = 0;
-		int end = src.find_first_of(deli);
-		std::string ret;
-		if (end == std::string::npos)
-		{
-			ret = src;
-			src.clear();
-		}
-		else
-		{
-			ret = src.substr(start, (end-1) -  start + 1);
-			end = src.find_first_not_of(deli, end);
-			src = src.substr(end, src.size() - end);
-		}
-		return ret;//빈문자열이 return 될때가 종료조건
-	}
-
+    {
+        int start = 0;
+        int end = src.find_first_of(deli);
+        std::string ret;
+        if (end == std::string::npos)
+        {
+            ret = src;
+            src.clear();
+        }
+        else//aaa?   end = 3 start = 0
+        {
+            ret = src.substr(start, (end-1) -  start + 1);
+            end = src.find_first_not_of(deli, end);
+            if (end == std::string::npos)
+                src.clear();
+            else
+                src = src.substr(end, src.size() - end);
+        }
+        return ret;//빈문자열이 return 될때가 종료조건
+    }
+	
 	int ft_contain(const std::string &src, std::string sub)
 	{
 		int len = sub.size();

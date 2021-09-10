@@ -8,38 +8,48 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 	std::string tem_index;
 
 	// 파일명이 있을때
-	if (tem.find('.') != std::string::npos)
+	if (info.method != "DELETE")
 	{
-		tem = "." + tem;
-		if (access(tem.c_str(), 0) == 0)
-			return ;
-		else
+		if (tem.find('.') != std::string::npos)
 		{
-			// error 코드
-			info.status = "404";
-			return ;	
-		}
-	}
-	else // 경로만 있을때
-	{
-		if (tem.back() != '/')
-			tem.push_back('/');
-		//index가 있는지 없지 if문 만들고 그안에 넣기
-		for (std::size_t i = 0;  i != v_index.size(); i++)
-		{
-			tem_index = tem + v_index[i];
-			tem_index = "." + tem_index;
-			if (access(tem_index.c_str(), 0) == 0)
+			tem = "." + tem;
+			info.same_location = false;
+			if (access(tem.c_str(), 0) == 0)
+				return ;
+			else
 			{
-				root.clear();
-				root = tem_index.substr(1);		
-				return ;			
+				// error 코드
+				info.status = "404";
+				return ;	
 			}
-			tem_index.clear();
 		}
-		info.status = "404";
-		return ;
+		else// 경로만 있을때
+		{
+			if (tem.back() != '/')
+				tem.push_back('/');
+			//index가 있는지 없지 if문 만들고 그안에 넣기
+			for (std::size_t i = 0;  i != v_index.size(); i++)
+			{
+				tem_index = tem + v_index[i];
+				tem_index = "." + tem_index;
+				if (access(tem_index.c_str(), 0) == 0)
+				{
+					root.clear();
+					root = tem_index.substr(1);		
+					return ;			
+				}
+				tem_index.clear();
+			}
+			info.status = "404";
+			return ;
+		}
 	}
+	std::string uri = "." + root;
+	if (access(uri.c_str(), 0) != 0)
+		info.status = "404";
+	else
+		info.status = "204";
+	return ;
 }
 
 std::string	msg_checker::find_url(Server& server)
@@ -56,9 +66,17 @@ std::string	msg_checker::find_url(Server& server)
 	for (iter i = start; i != end; i++)
 	{
 		std::string location = i->first;
+		std::string tem_url = url;
+		std::string tem_location = location;
 		size_t len = location.size();
 		if (url.compare(0, len, location) == 0)
 		{
+			if (tem_url.back() != '/')
+				tem_url.push_back('/');
+			if (tem_location.back() != '/')
+				tem_location.push_back('/');
+			if (tem_location == tem_url)
+				info.same_location = true;
 			if ( i->second.getLimitExcept().size() != 0)
 			{	
 				std::size_t j = 0;
@@ -94,7 +112,7 @@ std::string	msg_checker::find_url(Server& server)
 				check_indexfile(root, server_index);
 			if ((idx = root.find('.')) != std::string::npos)
 				info.extention = root.substr(idx);
-			if (info.cgi_path != "")
+			if (info.cgi_path != "" && info.method != "DELETE")
 			{
 				std::vector<std::string> cgi = i->second.getCigExcept();
 				size_t i = 0;
@@ -122,6 +140,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 {
 	std::string tem;
 	info.is_cgi = false;
+	info.same_location = false;
 	info.autoindex = false;
 	info.location_uri = "";
 	info.host = map["Host"];
@@ -130,14 +149,15 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	std::string path = ft::ft_strtok(firstline, " ");
 	std::string http = ft::ft_strtok(firstline, "/");
 	info.version = ft::ft_strtok(firstline, "/");
+
 	if (path.size() > 2048)
 	{
 		info.status = "414";
 		return (info);
 	}
+	
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
-	
 	ft::split(map["Accept"], " ,", info.accept); // 값이 없으면 모든 미디어 유형 / 서버가 지원하지 않는경우 [406]
 	ft::split(map["Accept-Language"], " ,", info.accept_Language);	
 	ft::split(map["Accept-Encoding"], " ,", info.accept_Encoding); // 헤더에 따라 수용 가능한 응답을 보낼 수 없는 경우 서버는 [406(Not Acceptable)] 상태 코드와 함께 오류 응답
