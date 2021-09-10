@@ -41,6 +41,7 @@ class client
 		checker_return_type _info;
 		std::string cgi_process();
 		std::string _autoindex();
+		std::map<int, bool> flag;
 	public:
 		client(std::string request_msg);
 		client(int socket, int port);

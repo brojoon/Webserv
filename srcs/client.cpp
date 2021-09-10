@@ -94,106 +94,106 @@ void client::parse_msg(std::string &request_msg)
 
 client::client(int socket, int port)
 {
+	std::cout << "constructor" << std::endl;
 	int ret, bufsize = 2560;
 	char buf[bufsize];
-	std::string str;
-
-	while (1)
+	static std::map<int, std::string> map;
+	std::string content;
+	//std::string str;
+	
+	ret = read(socket, buf, bufsize - 1);
+	socker_num = socket;
+	if (ret <= 0)
 	{
-		ret = read(socket, buf, 1);
-		socker_num = ret;
-		if (ret <= 0)
+		//std::cout << "disconnected: " << socket << std::endl;
+		FD_CLR(socket, &WEBSERVER->getReadSet());
+		FD_CLR(socket, &WEBSERVER->getWriteSet());
+		close(socket);
+		WEBSERVER->getClientSockets().erase(socket);
+		// for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
+		// it != WEBSERVER->getClientSockets().end(); it++)
+		// {
+		// 	std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
+		// }
+		return;
+	}
+	buf[ret] = 0;
+	map[socket] += std::string(buf);
+	int pos;
+	if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
+	{
+		if (_header_field.find("Host") == _header_field.end())
+			parse_msg(map[socket]);
+		if (_header_field.find("Content-Length") != _header_field.end())
 		{
-			//std::cout << "disconnected: " << socket << std::endl;
-			FD_CLR(socket, &WEBSERVER->getReadSet());
-			FD_CLR(socket, &WEBSERVER->getWriteSet());
-			close(socket);
-			WEBSERVER->getClientSockets().erase(socket);
-			// for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
-			// it != WEBSERVER->getClientSockets().end(); it++)
-			// {
-			// 	std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
-			// }
-			return;
-		}
-		buf[ret] = 0;
-		str += std::string(buf);
-		if (ft_contain(str, "\r\n\r\n"))// 헤더의 끝
-		{
-			parse_msg(str);
-			std::string content;
-			if (_header_field.find("Content-Length") != _header_field.end())
+			int length = atoi(_header_field["Content-Lentgth"].c_str());
+			if (length > (map[socket].size() - pos))
 			{
-				int length = atoi(_header_field["Content-Lentgth"].c_str());
-				ret = 0;
-				while (length > 0)
-				{
-					ret = read(socket, buf, bufsize);
-					length -= ret;
-					buf[ret] = 0;
-					content += std::string(buf);
-				}
-				for (std::string::iterator i = content.begin(); i != content.end(); i++)
-					if (*i == '\n' || *i == '\r')
-						length++;
-				while (length > 0)
-				{
-					ret = read(socket, buf, bufsize);
-					length -= ret;
-					buf[ret] = 0;
-					content += std::string(buf);
-				}
+				flag[socket] = false;
+				return ;
 			}
-			else if (_header_field.find("Transfer-Encoding") != _header_field.end())
+			else
+				flag[socket] = true;
+		}
+		else if (_header_field.find("Transfer-Encoding") != _header_field.end())
+		{
+			/*
+			std::string temp;
+			unsigned int chunk;
+			while (1)
 			{
-				std::string temp;
-				unsigned int chunk;
 				while (1)
 				{
-					while (1)
+					ret = read(socket, buf, 1);
+					buf[ret] = 0;
+					temp += std::string(buf);
+					if (atoi(temp.c_str()) == 0)
 					{
-						ret = read(socket, buf, 1);
-						buf[ret] = 0;
-						temp += std::string(buf);
-						if (atoi(temp.c_str()) == 0)
-						{
-							chunk = 0;
-							break;
-						}
-						if (temp.find("\n") != std::string::npos) //find("\r\n")이 아니라 find("\n")이 맞음
-						{
-							chunk = atoi(temp.c_str());
-							break;
-						}
-					}
-					temp.clear();
-					if (chunk == 0)
+						chunk = 0;
 						break;
-					while (chunk > 0)
-					{
-						ret = read(socket, buf, 1);
-						if (ret == 1 && (buf[0] == '\n' || buf[0] == '\r'))
-							continue;;
-						buf[ret] = 0;
-						content += std::string(buf);
-						chunk -= ret;
 					}
-					if (1 == recv(socket, buf, 1, MSG_PEEK | MSG_DONTWAIT))
+					if (temp.find("\n") != std::string::npos) //find("\r\n")이 아니라 find("\n")이 맞음
 					{
-						buf[recv(socket, buf, 1, 0)] = 0;
-						content += buf;
+						chunk = atoi(temp.c_str());
+						break;
 					}
 				}
+				temp.clear();
+				if (chunk == 0)
+					break;
+				while (chunk > 0)
+				{
+					ret = read(socket, buf, 1);
+					if (ret == 1 && (buf[0] == '\n' || buf[0] == '\r'))
+						continue;;
+					buf[ret] = 0;
+					content += std::string(buf);
+					chunk -= ret;
+				}
+				if (1 == recv(socket, buf, 1, MSG_PEEK | MSG_DONTWAIT))
+				{
+					buf[recv(socket, buf, 1, 0)] = 0;
+					content += buf;
+				}
 			}
-			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
-			break;
+			*/
 		}
+		else
+			flag[socket] = true;
+		_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
+		map[socket].clear();
+	}
+	else // 더 읽어들여야함
+	{
+		flag[socket] = false;
+		return ;
 	}
 }
-//////////////////
 
 std::string client::get_response()
 {
+	if (!flag[socker_num])
+		return std::string();
 	std::ifstream		file;
 	std::stringstream	buffer;
 	std::string body = "";
@@ -236,9 +236,6 @@ std::string client::get_response()
 		ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
 		_abs_path += "." + _info.url_abs_path;
 	}
-
-	
-
 	if (_info.is_cgi)
 	{
 		body = cgi_process();
@@ -257,6 +254,7 @@ std::string client::get_response()
 	ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
 	ret += std::string("\r\n");
 	ret += body;
+
 	return ret;
 }
 
@@ -327,9 +325,9 @@ std::string client::cgi_process()
     while (idx < ret.size())
     {
         idx = ret.find_first_of("\n", idx);
-        if (ret[idx + 1] == '\n')
+        if (ret[idx + 1] == '\r')
         {
-            ret.erase(0, idx + 2);
+            ret.erase(0, idx + 3);
             break;
         }
         idx++;
