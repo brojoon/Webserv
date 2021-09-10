@@ -96,8 +96,8 @@ client::client(int socket, int port)
 {
 	int ret, bufsize = 2560;
 	char buf[bufsize];
+	//static std::map<int, std::string> map;
 	std::string str;
-
 	while (1)
 	{
 		ret = read(socket, buf, 1);
@@ -124,6 +124,17 @@ client::client(int socket, int port)
 			std::string content;
 			if (_header_field.find("Content-Length") != _header_field.end())
 			{
+				/*
+				int length = atoi(_header_field["Content-Lentgth"].c_str());
+				if ()
+				{
+
+				}
+				else
+				{
+
+				}
+				*/
 				int length = atoi(_header_field["Content-Lentgth"].c_str());
 				ret = 0;
 				while (length > 0)
@@ -143,9 +154,11 @@ client::client(int socket, int port)
 					buf[ret] = 0;
 					content += std::string(buf);
 				}
+				
 			}
 			else if (_header_field.find("Transfer-Encoding") != _header_field.end())
 			{
+				
 				std::string temp;
 				unsigned int chunk;
 				while (1)
@@ -184,6 +197,11 @@ client::client(int socket, int port)
 						content += buf;
 					}
 				}
+			}
+			else // 더 읽어들여야함
+			{
+
+				return ;
 			}
 			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
 			break;
@@ -327,9 +345,9 @@ std::string client::cgi_process()
     while (idx < ret.size())
     {
         idx = ret.find_first_of("\n", idx);
-        if (ret[idx + 1] == '\n')
+        if (ret[idx + 1] == '\r')
         {
-            ret.erase(0, idx + 2);
+            ret.erase(0, idx + 3);
             break;
         }
         idx++;

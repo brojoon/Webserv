@@ -178,7 +178,13 @@ namespace ft
 		struct tm  tstruct;
 		char       buf[80];
 		tstruct = *localtime(&now);
-		tstruct.tm_hour -= 9;
+		if (tstruct.tm_hour >= 9)
+			tstruct.tm_hour -= 9;
+		else
+		{
+			tstruct.tm_hour += (24 - 9);
+			tstruct.tm_mday -= 1;
+		}
 		strftime(buf, sizeof(buf), "%a, %d %b %Y %T GMT", &tstruct);
 		return buf;
 	}
