@@ -17,7 +17,7 @@ namespace ft
 	bool isknown(const std::string &src);
 	std::string get_next_line(const std::string &src);
 	std::string ft_strtok(std::string &src, std::string deli);
-	bool ft_contain(const std::string &src, std::string sub);
+	int ft_contain(const std::string &src, std::string sub);
 	const std::string currentDateTime();
 	std::string getFileModifiedTime(const std::string &src) ;
 	long hexaStringToLong(const std::string &str);

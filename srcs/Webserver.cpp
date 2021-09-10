@@ -383,6 +383,9 @@ void Webserver::initWebServer()
 						client obj(i, port);
 						if (obj.getSockNum() == 0)
 							continue;
+						std::string t = obj.get_response();
+						if (t.empty())
+							continue;
 						response_list[i] = obj.get_response();
 						FD_SET(i, &instance->write_set);
 					}

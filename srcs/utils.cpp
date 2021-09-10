@@ -157,7 +157,7 @@ namespace ft
 		return ret;//빈문자열이 return 될때가 종료조건
 	}
 
-	bool ft_contain(const std::string &src, std::string sub)
+	int ft_contain(const std::string &src, std::string sub)
 	{
 		int len = sub.size();
 		int size =  src.size();
@@ -165,11 +165,11 @@ namespace ft
 		{
 			if (src.substr(i, len) == sub)
 			{
-				return true;
+				return i + len;
 			}		
 				
 		}
-		return false;
+		return -1;
 	}
 
 	// 현재시간을 string type으로 return하는 함수
