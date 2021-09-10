@@ -25,13 +25,13 @@ void set_signal(void)
 int main(int argc, char *argv[])
 {
 
-	if (argc != 2)
-	{
-		std::cout << "ERROR usage: ./webserv configFile" << std::endl;
-		return 1;
-	}
+	// if (argc != 2)
+	// {
+	// 	std::cout << "ERROR usage: ./webserv configFile" << std::endl;
+	// 	return 1;
+	// }
 	
-	if (WEBSERVER->parsingConfig(argv[1]) == false)
+	if (WEBSERVER->parsingConfig("./config/webserv.conf") == false)
 		return 1;
 
 

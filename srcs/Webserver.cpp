@@ -23,6 +23,7 @@ Webserver::~Webserver()
 		it != instance->client_sockets.end(); it++)
 	{
 		FD_CLR(it->first, &instance->read_set);
+		FD_CLR(it->first, &instance->write_set);
 		//std::cout << "deleted clt socket : " << it->first << std::endl;
 		close(it->first);
 	}
@@ -65,6 +66,11 @@ std::map<int, ServerFD> &Webserver::getServerSockets()
 fd_set &Webserver::getReadSet()
 {
 	return this->read_set;
+}
+
+fd_set &Webserver::getWriteSet()
+{
+	return this->write_set;
 }
 
 bool Webserver::parsingConfig(const char *config_file)
@@ -281,10 +287,11 @@ void Webserver::initWebServer()
 	bool connected;
 
 	FD_ZERO(&instance->read_set);
+	FD_ZERO(&instance->write_set);
 	int fd_max;
 	int ret;
 	int port;
-	std::string str;
+	int select_count = 1;
 	struct timeval timeout;
 
 	
@@ -323,14 +330,16 @@ void Webserver::initWebServer()
 	}
 
 	fd_max = instance->server_sockets.rbegin()->first;
-	std::cout << "fd_max : " << fd_max << std::endl;
+	//std::cout << "fd_max : " << fd_max << std::endl;
 
 	while(1)
 	{
-		timeout.tv_sec = 5;
-		timeout.tv_usec = 5000;
+		// timeout.tv_sec = 100;
+		// timeout.tv_usec = 500;
 		instance->read_temp = instance->read_set;
-		ret = select(fd_max + 1, &instance->read_temp, NULL, NULL, &timeout);
+		instance->write_temp = instance->write_set;
+		//std::cout << select_count++ << std::endl;
+		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, NULL);
 		if (ret < 0)
 		{
 			printf("select error detached");
@@ -358,6 +367,7 @@ void Webserver::initWebServer()
 							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
 							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
 							//std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
+							fcntl(clnt_sock, F_SETFL, O_NONBLOCK);
 							FD_SET(clnt_sock, &instance->read_set);
 							if (fd_max < instance->client_sockets.rbegin()->first)
 								fd_max = clnt_sock;
@@ -367,17 +377,29 @@ void Webserver::initWebServer()
 					}
 					if (connected != true) //read message
 					{
-						//std::cout << "통신에 사용된 client socket : " << i << std::endl;
-						str.clear();
+						//std::cout << "client socket read : " << i << std::endl;
 						port = ntohs(instance->client_sockets[i]);
 						//std::cout << "port : " << port << std::endl;
 						client obj(i, port);
 						if (obj.getSockNum() == 0)
 							continue;
-						str = obj.get_response();
-						write(i, str.c_str(), str.size());
-						str.clear();
+						response_list[i] = obj.get_response();
+						FD_SET(i, &instance->write_set);
 					}
+				}
+				if (FD_ISSET(i, &instance->write_temp) && !FD_ISSET(i, &instance->read_temp))
+				{
+					//std::cout << "client socket write : " << i << std::endl;
+					if (write(i, response_list[i].c_str(), response_list[i].size()) <= 0)
+					{
+						FD_CLR(i, &instance->write_set);
+						FD_CLR(i, &instance->read_set);
+						close(i);
+						instance->client_sockets.erase(i);
+					}
+					else
+						FD_CLR(i, &instance->write_set);
+					response_list[i].clear();
 				}
 			}
 		}
