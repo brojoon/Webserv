@@ -332,6 +332,7 @@ void Webserver::initWebServer()
 	fd_max = instance->server_sockets.rbegin()->first;
 	//std::cout << "fd_max : " << fd_max << std::endl;
 
+	int test;
 	while(1)
 	{
 		// timeout.tv_sec = 100;
@@ -339,7 +340,12 @@ void Webserver::initWebServer()
 		instance->read_temp = instance->read_set;
 		instance->write_temp = instance->write_set;
 		//std::cout << select_count++ << std::endl;
+		std::cout << "selecting..." << std::endl;
+		//std::cout << "tets  " << test << std::endl;
+		//std::cout << FD_ISSET(test, &instance->read_set) << std::endl;
 		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, NULL);
+		std::cout << "selecting... return !!!!" << std::endl;
+
 		if (ret < 0)
 		{
 			printf("select error detached");
@@ -365,6 +371,8 @@ void Webserver::initWebServer()
 							//std::cout << "new clnt is connected" << std::endl;
 							clnt_adr_size = sizeof(clnt_adr);
 							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
+							test = clnt_sock;
+							//std::cout << "clnt sock  " << clnt_sock << std::endl;
 							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
 							//std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
 							fcntl(clnt_sock, F_SETFL, O_NONBLOCK);

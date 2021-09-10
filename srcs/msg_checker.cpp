@@ -183,7 +183,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		info.body_size = 0;
 		//if (info.body_size == 0)
 		//	info.status = "204";
-		std::cout << "[body]\n" <<info.body << std::endl;
+		std::cout << "[body]\n" <<info.body.size() << std::endl;
 	}
 
 	std::map<int, Server>::iterator server_iter = WEBSERVER->getServerList().begin();

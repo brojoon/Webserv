@@ -8,8 +8,6 @@ std::string client::_autoindex()
 	std::string t = _info.location_uri;
 	std::string t2;
 	t2.assign(t, t.find_last_of("/"), t.size() - t.find_last_of("/"));
-	//t2.assign(t, 0, t.find_last_of("/") + 1);
-	//std::string path = "./";
     std::string path = "." + t;
 	std::cout << t2 << std::endl;
 	dir = opendir (path.c_str());
@@ -21,7 +19,7 @@ std::string client::_autoindex()
     if (dir != NULL) 
 	{
 		while ((ent = readdir (dir)) != NULL)
-		{//std::string(localhost:) + std::to_string(_info.port)
+		{
 			temp += path + std::string(ent->d_name);
 			stat(temp.c_str(), &state);
 			if (S_ISREG(state.st_mode))
@@ -49,7 +47,6 @@ std::string client::_autoindex()
 			}
 			temp.clear();
 		}
-		//std::cout << ret << std::endl;
 		closedir (dir);
     } 
 	else 
@@ -57,21 +54,23 @@ std::string client::_autoindex()
 	return ret;
 }
 
-void client::parse_msg(std::string &request_msg)
+void client::parse_msg(std::string &src)
 {
 	std::string str;
 	std::string temp;
 	std::string key;
 	std::string value;
-
+	std::string request_msg = src;
 	str = get_next_line(request_msg);
 	_first_line = str;
+
 	while ((str = get_next_line(request_msg)) != "\n\n")
 	{
 		key = ft_strtok(str, " :");
 		value = str;
 		_header_field[key] = value;
 	}
+
 }
 
 std::string chunk_check(std::string &src, int pos)
@@ -105,15 +104,16 @@ std::string chunk_check(std::string &src, int pos)
 
 client::client(int socket, int port)
 {
-	std::cout << "constructor" << std::endl;
-	int ret, bufsize = 2560;
+	//std::cout << "constructor" << std::endl;
+	int ret, bufsize = 20000;
 	char buf[bufsize];
 	static std::map<int, std::string> map;
 	std::string content;
 	//std::string str;
-	
-	ret = read(socket, buf, bufsize - 1);
-	socker_num = socket;
+	int pos;
+	pos = ft_contain(map[socket], "\r\n\r\n");
+	ret = recv(socket, buf, bufsize - 1, 0);
+	socket_num = socket;
 	if (ret <= 0)
 	{
 		//std::cout << "disconnected: " << socket << std::endl;
@@ -126,25 +126,32 @@ client::client(int socket, int port)
 		// {
 		// 	std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
 		// }
+		std::cout << "ret 이 음수" << std::endl;
 		return;
 	}
 	buf[ret] = 0;
 	map[socket] += std::string(buf);
-	int pos;
+	
+	int length;
 	if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
 	{
 		if (_header_field.find("Host") == _header_field.end())
+		{
 			parse_msg(map[socket]);
+			length = atoi(_header_field["Content-Length"].c_str());
+		}
 		if (_header_field.find("Content-Length") != _header_field.end())
 		{
-			int length = atoi(_header_field["Content-Lentgth"].c_str());
 			if (length > (map[socket].size() - pos))
 			{
+				std::cout << "len  " << length << std::endl;
+				std::cout << (map[socket].size()) << "    "  << pos << std::endl;
 				flag[socket] = false;
 				return ;
 			}
 			else
 			{
+				std::cout << length << std::endl;
 				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
 				flag[socket] = true;
 			}
@@ -163,12 +170,18 @@ client::client(int socket, int port)
 			}
 		}
 		else
+		{
 			flag[socket] = true;
-		_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
-		map[socket].clear();
+		}
+		if (flag[socket] == true)
+		{
+			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
+			map[socket].clear();
+			}
 	}
 	else // 더 읽어들여야함
 	{
+		//std::cout << map[socket] << std::endl;
 		flag[socket] = false;
 		return ;
 	}
@@ -177,8 +190,8 @@ client::client(int socket, int port)
 
 std::string client::get_response()
 {
-	std::cout << flag[socker_num] << std::endl;
-	if (!flag[socker_num])
+	//std::cout << flag[socket_num] << std::endl;
+	if (!flag[socket_num])
 		return std::string();
 	std::ifstream		file;
 	std::stringstream	buffer;
@@ -337,5 +350,5 @@ msg_checker::~msg_checker() {}
 
 int client::getSockNum()
 {
-	return this->socker_num;
+	return this->socket_num;
 }
