@@ -30,10 +30,10 @@ int main(int argc, char *argv[])
 	// 	std::cout << "ERROR usage: ./webserv configFile" << std::endl;
 	// 	return 1;
 	// }
-	
 	if (WEBSERVER->parsingConfig("./config/webserv.conf") == false)
 		return 1;
-
+	(void)argc;
+	(void)argv;
 
 	//ft::config_print();
 	set_signal();

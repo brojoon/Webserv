@@ -22,6 +22,7 @@ namespace ft
 	std::string getFileModifiedTime(const std::string &src) ;
 	long hexaStringToLong(const std::string &str);
 	std::string longToHexaString(long src);
+	std::string::size_type find_first_of(const char *src, const char *find_in_str, std::string::size_type pos);
 	
 	class env
 	{
