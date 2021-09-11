@@ -335,14 +335,14 @@ void Webserver::initWebServer()
 	int test;
 	while(1)
 	{
-		timeout.tv_sec = 5;
-		timeout.tv_usec = 500;
+		//timeout.tv_sec = 5;
+		//timeout.tv_usec = 500;
 		instance->read_temp = instance->read_set;
 		instance->write_temp = instance->write_set;
 		std::cout << "select count: " << select_count++ <<  std::endl;
 		//std::cout << "tets  " << test << std::endl;
 		//std::cout << FD_ISSET(test, &instance->read_set) << std::endl;
-		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, &timeout);
+		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, 0);
 		//std::cout << "selecting... return !!!!" << std::endl;
 
 		if (ret < 0)
