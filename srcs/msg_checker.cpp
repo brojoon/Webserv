@@ -228,6 +228,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		pase_body_for_post(map);
 		if (!info.is_file)
 		{
+			info.body.clear();
 			info.body = map["body"];
 			info.query = info.body;
 		}

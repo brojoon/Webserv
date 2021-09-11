@@ -218,7 +218,6 @@ void	client::post_upload()
 
 std::string client::get_response()
 {
-	//std::cout << flag[socket_num] << std::endl;
 	if (!flag[socket_num])
 		return std::string();
 	std::ifstream		file;
@@ -241,7 +240,7 @@ std::string client::get_response()
 	}
 	if (_info.method == "DELETE" && _info.status == "204")
 		delet_file();
-	if (_info.method == "POST" && _info.status != "204")
+	if (_info.method == "POST" && _info.is_file && _info.status != "204")
 		client::post_upload();	
 	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
 	ret += std::string("Server: 42Webserv/1.0\r\n");
@@ -265,7 +264,6 @@ std::string client::get_response()
 	{
 		if (!_info.is_cgi)
 			_abs_path = "." + _info.url_abs_path;
-		std::cout << "aaaa " << _abs_path  << " " << _info.is_cgi << std::endl;
 		ret += std::string("Location: ./upload/") + _info.body_filename + std::string("\r\n");
 	}
 	else if (_info.status == "501")
