@@ -105,8 +105,9 @@ std::string chunk_check(std::string &src, int pos)
 client::client(int socket, int port)
 {
 	//std::cout << "constructor" << std::endl;
-	int ret, bufsize = 20000;
+	int ret, bufsize = 4096;
 	char buf[bufsize];
+	char buf2[1];
 	static std::map<int, std::string> map;
 	std::string content;
 	//std::string str;
@@ -131,9 +132,11 @@ client::client(int socket, int port)
 		is_read_end = true;
 		return;
 	}
+	for(int i = 0; i < ret; i++)
+		map[socket] += buf[i];
+	std::cout << "map socket size: " << map[socket].size() << std::endl;
 	buf[ret] = 0;
-	map[socket] += std::string(buf);
-	
+
 	int length;
 	if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
 	{
@@ -146,15 +149,30 @@ client::client(int socket, int port)
 		{
 			if (length > (map[socket].size() - pos))
 			{
-				std::cout << "len  " << length << std::endl;
+				std::cout << "length: " << length << std::endl;
 				std::cout << (map[socket].size()) << "    "  << pos << std::endl;
 				flag[socket] = false;
 				return ;
 			}
 			else
 			{
-				std::cout << length << std::endl;
+				std::cout << "length: " << length << std::endl;
 				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
+				if (length > bufsize)
+				{
+					FILE *fp_bin = fopen("./var/www/html/upload/ex2.jpg", "wb");
+					std::cout << "body size: " << _header_field["body"].size() << std::endl;
+					int i = 0;
+					for (std::string::iterator it = _header_field["body"].begin();
+							it != _header_field["body"].end(); it++)
+					{
+						buf2[0] = *it;
+						fwrite(buf2, 1, 1, fp_bin);
+						i++;
+					}
+					fclose(fp_bin);
+					std::cout << "i : " << i << std::endl;
+				}
 				flag[socket] = true;
 			}
 		}
