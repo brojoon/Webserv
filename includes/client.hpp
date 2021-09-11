@@ -52,7 +52,8 @@ class client
 		client(int socket, int port);
 		std::string get_response();
 		void 		delet_file();
-		int getSockNum();
+		int 		getSockNum();
+		void		post_upload();
 		bool isReadEnd();
 };
 

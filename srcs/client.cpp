@@ -207,6 +207,14 @@ client::client(int socket, int port)
 	}
 }
 
+void	client::post_upload()
+{
+	std::string _abs_path = "." + _info.url_abs_path;
+	std::ofstream file(_abs_path.c_str());
+	if (file.is_open())
+		file << _info.body;
+	file.close();
+}
 
 std::string client::get_response()
 {
@@ -233,6 +241,8 @@ std::string client::get_response()
 	}
 	if (_info.method == "DELETE" && _info.status == "204")
 		delet_file();
+	if (_info.method == "POST" && _info.status != "204")
+		client::post_upload();	
 	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
 	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
@@ -241,16 +251,22 @@ std::string client::get_response()
 		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
 		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
 	}
-	else if (_info.status == "204")
+	else if (_info.method == "DELETE" && _info.status == "204")
 	{
 		ret += std::string("\r\n");
 		return ret;
 	}
 	else if (_info.status == "301")
 	{
+		std::cout << _info.url_abs_path  << std::endl;
 		ret += std::string("Location: ") + _info.url_abs_path + std::string("\r\n");
-		ret += std::string("\r\n");
-		return ret;
+	}
+	else if (_info.method == "POST" && _info.is_file)
+	{
+		if (!_info.is_cgi)
+			_abs_path = "." + _info.url_abs_path;
+		std::cout << "aaaa " << _abs_path  << " " << _info.is_cgi << std::endl;
+		ret += std::string("Location: ./upload/") + _info.body_filename + std::string("\r\n");
 	}
 	else if (_info.status == "501")
 	{

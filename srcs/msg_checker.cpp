@@ -10,6 +10,11 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 	// 파일명이 있을때
 	if (info.method != "DELETE")
 	{
+		if (info.method == "POST" && info.body_filename != "")
+		{
+			root += "/" + info.body_filename;
+			return ;
+		}
 		if (tem.find('.') != std::string::npos)
 		{
 			tem = "." + tem;
@@ -44,12 +49,14 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 			return ;
 		}
 	}
+
 	std::string uri = "." + root;
 	if (access(uri.c_str(), 0) != 0)
 		info.status = "404";
 	else
 		info.status = "204";
 	return ;
+
 }
 
 std::string	msg_checker::find_url(Server& server)
@@ -136,12 +143,52 @@ std::string	msg_checker::find_url(Server& server)
 	return (root);
 }
 
+void msg_checker::pase_body_for_post(std::map<std::string, std::string> &map)
+{
+	std::string str;
+	std::string key;
+	std::string value;
+	std::string line;
+	int i = 3;
+	while ( i != 0 &&((str = ft::get_next_line(info.body)) != "\n\n") && info.body != "")
+	{
+		if (i == 3)
+			line = str;
+		else
+		{
+			key = ft::ft_strtok(str, " :");
+			value = str;
+			map[key] = value;
+		}
+		i--;
+	}
+	if ( map["Content-Disposition"] != "")
+	{
+		info.is_file = true;
+		info.body_type = map["Content-Type"];
+		std::string  Disposition = map["Content-Disposition"];
+		ft::ft_strtok(Disposition, "=");
+		ft::ft_strtok(Disposition, "=");
+		int size = Disposition.size();
+		info.body_filename = Disposition.substr(1, size - 3);
+		ft::ft_strtok(info.body, "\n");
+		ft::ft_strtok(info.body, "\n");
+		ft::ft_strtok(info.body, "\n");
+		ft::ft_strtok(info.body, "\n");
+		size = info.body.find(line.c_str());
+		std::string tem = info.body.substr(0, size);
+		info.body.clear();
+		info.body = tem;
+	}
+}
+
 msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std::string, std::string> &map, int port)
 {
 	std::string tem;
 	info.is_cgi = false;
 	info.same_location = false;
 	info.autoindex = false;
+	info.is_file = false;
 	info.location_uri = "";
 	info.body_size = 0;
 	info.host = map["Host"];
@@ -150,7 +197,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	std::string path = ft::ft_strtok(firstline, " ");
 	std::string http = ft::ft_strtok(firstline, "/");
 	info.version = ft::ft_strtok(firstline, "/");
-	//std::cout << "path " <<  path << std::endl;
+
 	if (path.size() > 2048)
 	{
 		info.status = "414";
@@ -175,17 +222,18 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		info.status = "405";
 		return (info);
 	}
-
 	if (info.method == "POST")
 	{
 		info.body =  map["body"];
-		info.query = info.body;
-		info.body_size = 0;
-		//if (info.body_size == 0)
-		//	info.status = "204";
-		std::cout << "[body]\n" <<info.body.size() << std::endl;
+		pase_body_for_post(map);
+		if (!info.is_file)
+		{
+			info.body = map["body"];
+			info.query = info.body;
+		}
+		if (info.body.size() == 0)
+			info.status = "204";		
 	}
-
 	std::map<int, Server>::iterator server_iter = WEBSERVER->getServerList().begin();
 	for (; server_iter != WEBSERVER->getServerList().end(); server_iter++)
 	{
@@ -238,4 +286,3 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	std::cout << "root " << info.url_abs_path << std::endl;
 	return (info);
 }
-

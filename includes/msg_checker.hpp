@@ -30,7 +30,9 @@ class msg_checker
 			bool		same_location;
 			std::string body;
 			int			body_size;
-
+			std::string body_type;
+			std::string body_filename;
+			bool		is_file;
 
 			unsigned int max_body_size;
 			bool		autoindex;
@@ -51,6 +53,7 @@ class msg_checker
 		std::string	find_url(Server& server);
 		void 		find_redirect_url(Server& server, std::string& root, std::string redirect_Uri);
 		void		check_indexfile(std::string& root, std::vector<std::string> v_index);
+		void		pase_body_for_post(std::map<std::string, std::string> &map);
 };
 
 #endif
