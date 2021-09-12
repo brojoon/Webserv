@@ -211,34 +211,39 @@ client::client(int socket, int port)
 
 void	client::post_upload()
 {
-		if (_info.body_size > (int)_info.max_body_size)
+	if (_info.body == "\r\n")
+	{
+		_info.post_err = true;
+		_info.query = "erro=파일을 선택해 주세요";
+		return ;
+	}
+	if (_info.body_size > (int)_info.max_body_size)
+	{
+		_info.post_err = true;
+		_info.query = "erro=파일 크기 제한 0.5M!!";
+		return ;
+	}
+	if (_info.extention != ".jpg" && _info.extention != ".png" && _info.extention != ".JPEG"
+		&& _info.extention != ".php" && _info.extention != ".html" && _info.extention != ".htm")
+	{
+		_info.post_err = true;
+		_info.query = "erro=업로드 가능 파일 형식 => jpg/jpeg/png, html/htm, php";
+		return ;
+	}
+	if (_info.post_err == false)
+	{
+		std::string _abs_path = "." + _info.url_abs_path;
+		std::ofstream file(_abs_path.c_str());
+		if (file.is_open())
+			file << _info.body;
+		else
 		{
 			_info.post_err = true;
-			_info.query = "erro=파일 크기 제한 0.5M!!";
-
-			return ;
+			_info.query = "erro=파일 저장에 실패 하였습니다";
 		}
-		if (_info.extention != ".jpg" && _info.extention != ".png" && _info.extention != ".JPEG"
-			&& _info.extention != ".php" && _info.extention != ".html" && _info.extention != ".htm")
-		{
-			_info.post_err = true;
-			_info.query = "erro=업로드 가능 파일 형식 => jpg/jpeg/png, html/htm, php";
-			return ;
-		}
-		if (_info.post_err == false)
-		{
-			std::string _abs_path = "." + _info.url_abs_path;
-			std::ofstream file(_abs_path.c_str());
-			if (file.is_open())
-				file << _info.body;
-			else
-			{
-				_info.post_err = true;
-				_info.query = "erro=파일 저장에 실패 하였습니다";
-			}
-			file.close();
-			return ;
-		}
+		file.close();
+		return ;
+	}
 }
 
 std::string client::get_response()
@@ -314,7 +319,6 @@ std::string client::get_response()
 		ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
 		_abs_path += "." + _info.url_abs_path;
 	}
-
 	if (_info.is_cgi)
 	{
 		body = cgi_process();

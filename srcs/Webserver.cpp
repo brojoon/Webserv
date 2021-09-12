@@ -166,7 +166,6 @@ bool Webserver::parsingConfig(const char *config_file)
 			{
 				iter++;
 				instance->server_list[index].setServerName(*iter);
-				iter++;
 			}
 			else if (*iter == "client_max_body_size")
 			{
@@ -175,6 +174,7 @@ bool Webserver::parsingConfig(const char *config_file)
 				if (tmp <= 0)
 					throw "ERROR : client_max_body_size is wrong";
 				instance->server_list[index].setClientMaxBodySize(static_cast<unsigned int>(tmp));
+				
 			}
 			else if (*iter == "root")
 			{
@@ -408,6 +408,4 @@ void Webserver::initWebServer()
 			}
 		}
 	}
-
 }
-
