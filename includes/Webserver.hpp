@@ -46,6 +46,7 @@ class Webserver
 		std::map<int, unsigned short> client_sockets; 
 		std::map<int, ServerFD> server_sockets; 
 		std::map<int, std::string> response_list;
+		std::map<int, bool> is_socket_end;
 		fd_set read_set, read_temp, write_set, write_temp;
 	public:
 		virtual ~Webserver();
@@ -55,6 +56,7 @@ class Webserver
 		std::set<unsigned short> &getListenPort();
 		std::map<int, unsigned short> &getClientSockets();
 		std::map<int, ServerFD> &getServerSockets();
+		std::map<int, bool> &getIsSocketEnd();
 		fd_set &getReadSet();
 		fd_set &getWriteSet();
 		

@@ -107,7 +107,7 @@ client::client(int socket, int port)
 	std::string content;
 	int pos;
 	pos = ft_contain(map[socket], "\r\n\r\n");
-	ret = recv(socket, buf, bufsize - 1, 0);
+	ret = read(socket, buf, bufsize - 1);
 	socket_num = socket;
 	is_read_end = false;
 	if (ret <= 0)
@@ -127,40 +127,52 @@ client::client(int socket, int port)
 	}
 	for(int i = 0; i < ret; i++)
 		map[socket] += buf[i];
+	std::cout << "현재 map size()" << map[socket].size() << std::endl;
 	buf[ret] = 0;
-	int length;
+	int length = 0;
 	if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
 	{
 		if (_header_field.find("Host") == _header_field.end())
 		{
 			parse_msg(map[socket]);
 			length = atoi(_header_field["Content-Length"].c_str());
+			std::cout << "Content-Length: " << length << std::endl;
 		}
 		if (_header_field.find("Content-Length") != _header_field.end())
 		{
+			for (std::map<int, Server>::iterator it = WEBSERVER->getServerList().begin();
+				it != WEBSERVER->getServerList().end(); it++)
+			{
+				for(std::vector<unsigned short>::iterator it2 = it->second.getPorts().begin();
+					it2 != it->second.getPorts().end(); it2++)
+				{
+					if (*it2 == (unsigned short)port)
+					{
+						if ((map[socket].size() - pos) > it->second.getClientMaxBodySize() || 
+							length > (int)it->second.getClientMaxBodySize())
+						{
+							_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
+							std::cout << "body size : " << _header_field["body"].size() << std::endl;
+							flag[socket] = true;
+							FD_CLR(socket, &WEBSERVER->getReadSet());
+							shutdown(socket, SHUT_RD);
+							WEBSERVER->getIsSocketEnd()[socket] = true;
+							_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
+							_info.status = "413";
+							map[socket].clear();
+							return;
+						}
+					}
+				}
+			}
 			if ((unsigned long)length > (map[socket].size() - pos))
 			{
 				flag[socket] = false;
-				return ;
+				return;
 			}
 			else
 			{
 				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
-				// if (length > bufsize)
-				// {
-				// 	FILE *fp_bin = fopen("./var/www/html/upload/ex2.jpg", "wb");
-				// 	std::cout << "body size: " << _header_field["body"].size() << std::endl;
-				// 	int i = 0;
-				// 	for (std::string::iterator it = _header_field["body"].begin();
-				// 			it != _header_field["body"].end(); it++)
-				// 	{
-				// 		buf2[0] = *it;
-				// 		fwrite(buf2, 1, 1, fp_bin);
-				// 		i++;
-				// 	}
-				// 	fclose(fp_bin);
-				// 	std::cout << "i : " << i << std::endl;
-				// }
 				map[socket].clear();
 				flag[socket] = true;
 			}
@@ -215,10 +227,12 @@ std::string client::get_response()
 	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
 
-	if (_info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414")
+	if (_info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414" || _info.status == "413")
 	{
 		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
 		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
+		std::cout << "_abs_path : " << _abs_path << std::endl;
+		_info.is_cgi = false;
 	}
 	else if (_info.method == "DELETE" && _info.status == "204")
 	{
