@@ -51,6 +51,7 @@ class client
 		client(std::string request_msg);
 		client(int socket, int port);
 		std::string get_response();
+		void 		exe_method();
 		void 		delet_file();
 		int 		getSockNum();
 		void		post_upload();

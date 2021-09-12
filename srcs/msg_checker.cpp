@@ -198,6 +198,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.autoindex = false;
 	info.is_file = false;
 	info.post_err = false;
+	info.check_autoindex = false;
 	info.location_uri = "";
 	info.body_size = 0;
 	info.host = map["Host"];
@@ -220,7 +221,6 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	ft::split(map["Accept-Encoding"], " ,", info.accept_Encoding); // 헤더에 따라 수용 가능한 응답을 보낼 수 없는 경우 서버는 [406(Not Acceptable)] 상태 코드와 함께 오류 응답
 	info.user_Agent = map["User-Agent"]; // 여러 제품 토큰과 사용자 에이전트의 중요한 부분을 구성하는 에이전트 및 하위 제품을 식별하는 설명
 
-	// 허용 method가 아닌경우 에러 메세지
 	if (ft::isknown(info.method) == false)
 	{
 		info.status = "501";
@@ -231,6 +231,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		info.status = "405";
 		return (info);
 	}
+
 	if (info.method == "POST")
 	{
 		info.body =  map["body"];
@@ -245,6 +246,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		if (info.body.size() == 0)
 			info.status = "204";
 	}
+
 	std::map<int, Server>::iterator server_iter = WEBSERVER->getServerList().begin();
 	for (; server_iter != WEBSERVER->getServerList().end(); server_iter++)
 	{
@@ -267,6 +269,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 				break ;
 		}
 	}
+
 	if (server_iter == WEBSERVER->getServerList().end())
 	{
 		server_iter = WEBSERVER->getServerList().begin();
@@ -295,5 +298,6 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		}
 	}
 	std::cout << "root " << info.url_abs_path << std::endl;
+	
 	return (info);
 }

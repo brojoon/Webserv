@@ -138,13 +138,7 @@ client::client(int socket, int port)
 		}
 		if (_header_field.find("Content-Length") != _header_field.end())
 		{
-			unsigned long max_size = WEBSERVER->getServerList()[0].getClientMaxBodySize();
-			if (max_size < map[socket].size() - pos)
-			{
-				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
-				flag[socket] = true;
-			}
-			else if ((unsigned long)length > (map[socket].size() - pos))
+			if ((unsigned long)length > (map[socket].size() - pos))
 			{
 				flag[socket] = false;
 				return ;
@@ -193,7 +187,6 @@ client::client(int socket, int port)
 		if (flag[socket] == true)
 		{
 			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
-			std::cout << "finish check" << std::endl;
 			map[socket].clear();
 		}
 	}
@@ -204,12 +197,113 @@ client::client(int socket, int port)
 	}
 }
 
+
+std::string client::get_response()
+{
+	if (!flag[socket_num])
+		return std::string();
+	std::ifstream		file;
+	std::stringstream	buffer;
+	std::string body = "";
+	unsigned int s;
+	std::string ret = "";
+	std::string _abs_path = "";
+
+	client::exe_method();
+
+	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
+	ret += std::string("Server: 42Webserv/1.0\r\n");
+	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
+
+	if (_info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414")
+	{
+		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
+		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
+	}
+	else if (_info.method == "DELETE" && _info.status == "204")
+	{
+		ret += std::string("\r\n");
+			return ret;
+	}
+	else if (_info.status == "301")
+	{
+		ret += std::string("Location: ") + _info.url_abs_path + std::string("\r\n");
+	}
+	else if (_info.method == "POST" && _info.is_file)
+	{
+		if(!_info.post_err)
+		{
+			if (!_info.is_cgi)
+				_abs_path = "." + _info.url_abs_path;
+			ret += std::string("Location: ./upload/") + _info.body_filename + std::string("\r\n");
+		}
+		else
+		{
+			_info.url_abs_path.clear();
+			_info.url_abs_path = "/var/www/html/upload/default.php";
+			_info.extention = ".php";
+			_info.is_cgi = true;
+			ret += std::string("Location: ./upload/default.php") + std::string("\r\n");
+		}
+	}
+	else if (_info.status == "501")
+	{
+		ret += std::string("\r\n");
+		return ret;
+	}
+	else if (!_info.check_autoindex)
+	{
+		ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
+		_abs_path += "." + _info.url_abs_path;
+	}
+
+	//////////파일 읽기/////////////
+	if (_info.check_autoindex)
+		body = _autoindex();
+	else if (_info.is_cgi)
+	{
+		body = cgi_process();
+		_info.is_cgi = false;
+	}
+	else
+	{
+		file.open(_abs_path.c_str(), std::ifstream::in);
+		file.is_open();
+		buffer << file.rdbuf();
+		body = buffer.str();
+		file.close();
+	}
+
+	s = body.size();
+	std::stringstream ss;
+	ss << s;
+	ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
+	ret += std::string("\r\n");
+	ret += body;
+
+	return ret;
+}
+
+void client::exe_method()
+{
+	if (_info.autoindex && _info.status == "404" && _info.same_location)
+	{
+		_info.status = "200";
+		_info.check_autoindex = true;
+	}
+	if (_info.method == "DELETE" && _info.status == "204")
+		delet_file();
+	if (_info.method == "POST" && _info.is_file && _info.status != "204")
+		post_upload();
+}
+
 void	client::post_upload()
 {
 	if (_info.body == "\r\n")
 	{
 		_info.post_err = true;
 		_info.query = "erro=파일을 선택해 주세요";
+		_info.body.clear();
 		return ;
 	}
 	if (_info.body_size > (int)_info.max_body_size)
@@ -239,104 +333,6 @@ void	client::post_upload()
 		file.close();
 		return ;
 	}
-}
-
-std::string client::get_response()
-{
-	if (!flag[socket_num])
-		return std::string();
-	std::cout << "get_response" << std::endl;
-	std::cout << _info.body_size << std::endl;
-	std::ifstream		file;
-	std::stringstream	buffer;
-	std::string body = "";
-	unsigned int s;
-	std::string ret = "";
-	std::string _abs_path = "";
-	if (_info.autoindex && _info.status == "404" && _info.same_location)
-	{
-		ret += std::string("HTTP/1.1 ") + "200" + std::string(" ") + "OK" + std::string("\r\n");
-		ret += std::string("Server: 42Webserv/1.0\r\n");
-		ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
-		body = _autoindex();
-		s = body.size();
-		std::stringstream ss;
-		ss << s;
-		ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
-		ret += std::string("\r\n");
-		ret += body;
-		return ret;
-	}
-	if (_info.method == "DELETE" && _info.status == "204")
-		delet_file();
-	if (_info.method == "POST" && _info.is_file && _info.status != "204")
-		client::post_upload();
-	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
-	ret += std::string("Server: 42Webserv/1.0\r\n");
-	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
-	if (_info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414")
-	{
-		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
-		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
-	}
-	else if (_info.method == "DELETE" && _info.status == "204")
-	{
-		ret += std::string("\r\n");
-			return ret;
-	}
-	else if (_info.status == "301")
-	{
-		std::cout << _info.url_abs_path  << std::endl;
-		ret += std::string("Location: ") + _info.url_abs_path + std::string("\r\n");
-	}
-	else if (_info.method == "POST" && _info.is_file)
-	{
-		if(!_info.post_err)
-		{
-			if (!_info.is_cgi)
-				_abs_path = "." + _info.url_abs_path;
-			ret += std::string("Location: ./upload/") + _info.body_filename + std::string("\r\n");
-		}
-		else
-		{
-			_info.url_abs_path.clear();
-			_info.url_abs_path = "/var/www/html/upload/default.php";
-			_info.extention = ".php";
-			_info.is_cgi = true;
-			ret += std::string("Location: ./var/www/html/upload/default.php") + std::string("\r\n");
-		}
-	}
-	else if (_info.status == "501")
-	{
-		ret += std::string("\r\n");
-		return ret;
-	}
-	else
-	{
-		ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
-		_abs_path += "." + _info.url_abs_path;
-	}
-	if (_info.is_cgi)
-	{
-		body = cgi_process();
-		_info.is_cgi = false;
-	}
-	else
-	{
-		file.open(_abs_path.c_str(), std::ifstream::in);
-		file.is_open();
-		buffer << file.rdbuf();
-		body = buffer.str();
-		file.close();
-	}
-
-	s = body.size();
-	std::stringstream ss;
-	ss << s;
-	ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
-	ret += std::string("\r\n");
-	ret += body;
-	return ret;
 }
 
 void client::delet_file()
@@ -423,7 +419,6 @@ msg_checker::msg_checker()
 }
 
 msg_checker::~msg_checker() {}
-
 
 int client::getSockNum()
 {
