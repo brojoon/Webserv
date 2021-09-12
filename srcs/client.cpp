@@ -16,7 +16,7 @@ std::string client::_autoindex()
 	std::string temp;
 	std::string ret;
 	getcwd(buf,999);
-    if (dir != NULL) 
+    if (dir != NULL)
 	{
 		while ((ent = readdir (dir)) != NULL)
 		{
@@ -48,8 +48,8 @@ std::string client::_autoindex()
 			temp.clear();
 		}
 		closedir (dir);
-    } 
-	else 
+    }
+	else
         perror ("");
 	return ret;
 }
@@ -84,13 +84,10 @@ std::string chunk_check(std::string &src, int pos)
 	{
 		end = ft::find_first_of(src.c_str(), "\r", start) + 1;
 		len = hexaStringToLong(src.substr(start, end - start -1));
-		std::cout << "start : " << start << "   end: " << end << std::endl;
-		std::cout << "len : " << len << std::endl;
 		if (end == std::string::npos || (src[start] == '0' && start == src.size() - 1))
 			break;
 		start = end + 1;
 		end = ft::find_first_of(src.c_str(), "\r", start) - 1;
-		std::cout << "start : " << start << "   end: " << end << std::endl;
 		if (len == (end - start + 1))
 			std::cout << "ok\n" << std::endl;
 		else
@@ -104,13 +101,10 @@ std::string chunk_check(std::string &src, int pos)
 
 client::client(int socket, int port)
 {
-	//std::cout << "constructor" << std::endl;
 	int ret, bufsize = 4096;
 	char buf[bufsize];
-	//char buf2[1];
 	static std::map<int, std::string> map;
 	std::string content;
-	//std::string str;
 	int pos;
 	pos = ft_contain(map[socket], "\r\n\r\n");
 	ret = recv(socket, buf, bufsize - 1, 0);
@@ -133,9 +127,7 @@ client::client(int socket, int port)
 	}
 	for(int i = 0; i < ret; i++)
 		map[socket] += buf[i];
-	//std::cout << "map socket size: " << map[socket].size() << std::endl;
 	buf[ret] = 0;
-
 	int length;
 	if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
 	{
@@ -143,19 +135,22 @@ client::client(int socket, int port)
 		{
 			parse_msg(map[socket]);
 			length = atoi(_header_field["Content-Length"].c_str());
-			//std::cout << "length: " << std::endl;
 		}
 		if (_header_field.find("Content-Length") != _header_field.end())
 		{
-			if ((unsigned long)length > (map[socket].size() - pos))
+			unsigned long max_size = WEBSERVER->getServerList()[0].getClientMaxBodySize();
+			if (max_size < map[socket].size() - pos)
 			{
-				//std::cout << (map[socket].size()) << "    "  << pos << std::endl;
+				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
+				flag[socket] = true;
+			}
+			else if ((unsigned long)length > (map[socket].size() - pos))
+			{
 				flag[socket] = false;
 				return ;
 			}
 			else
 			{
-				//std::cout << "length: " << length << std::endl;
 				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
 				// if (length > bufsize)
 				// {
@@ -198,12 +193,12 @@ client::client(int socket, int port)
 		if (flag[socket] == true)
 		{
 			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
+			std::cout << "finish check" << std::endl;
 			map[socket].clear();
 		}
 	}
 	else // 더 읽어들여야함
 	{
-		//std::cout << map[socket] << std::endl;
 		flag[socket] = false;
 		return ;
 	}
@@ -250,6 +245,8 @@ std::string client::get_response()
 {
 	if (!flag[socket_num])
 		return std::string();
+	std::cout << "get_response" << std::endl;
+	std::cout << _info.body_size << std::endl;
 	std::ifstream		file;
 	std::stringstream	buffer;
 	std::string body = "";
@@ -273,12 +270,12 @@ std::string client::get_response()
 	if (_info.method == "DELETE" && _info.status == "204")
 		delet_file();
 	if (_info.method == "POST" && _info.is_file && _info.status != "204")
-		client::post_upload();	
+		client::post_upload();
 	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
 	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
 	if (_info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414")
-	{	
+	{
 		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
 		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
 	}
@@ -348,7 +345,7 @@ void client::delet_file()
 	if (remove(path.c_str()) == 0)
 		_info.status = "204";
 	else
-		_info.status = "403";	
+		_info.status = "403";
 }
 
 std::string client::cgi_process()
@@ -361,20 +358,20 @@ std::string client::cgi_process()
 	argv[2] = NULL;
 	std::stringstream ss;
 	ss << _info.port;
-	
+
     char **env = ft::env("0", _info.extention, _info.url_abs_path, _info.query,\
     		_info.method,_info.host, ss.str(), _info.version).get_env();
 
     int nbytes;
     char inbuf[200];
     if (pipe(pip) != 0)
-    {   
-        std::cout << "pipe() error" << std::endl; 
+    {
+        std::cout << "pipe() error" << std::endl;
         return 0;
     }
     pid_t pid = fork();
 
-    if (pid == 0) 
+    if (pid == 0)
     {
         dup2(pip[1], 1);
         close(pip[0]);
@@ -383,10 +380,10 @@ std::string client::cgi_process()
 			write(2, "execve error\n", 13);
         exit(-1);
     }
-    else if (pid > 0) 
+    else if (pid > 0)
     {
         int status;
-        
+
         close(pip[1]);
 		waitpid(pid, &status, 0);
         while ((nbytes = read(pip[0], inbuf, 199)) != 0)

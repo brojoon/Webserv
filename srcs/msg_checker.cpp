@@ -25,7 +25,7 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 			{
 				// error 코드
 				info.status = "404";
-				return ;	
+				return ;
 			}
 		}
 		else// 경로만 있을때
@@ -40,8 +40,8 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 				if (access(tem_index.c_str(), 0) == 0)
 				{
 					root.clear();
-					root = tem_index.substr(1);		
-					return ;			
+					root = tem_index.substr(1);
+					return ;
 				}
 				tem_index.clear();
 			}
@@ -67,11 +67,11 @@ std::string	msg_checker::find_url(Server& server)
 	std::string root;
 	std::string::size_type idx;
 	std::vector<std::string> server_index = server.getDifaultFiles();
-	
+
 	iter start = server.getLocations().rbegin();
 	iter end = server.getLocations().rend();
 	for (iter i = start; i != end; i++)
-	{		
+	{
 		std::string location = i->first;
 		std::string tem_url = url;
 		std::string tem_location = location;
@@ -85,29 +85,29 @@ std::string	msg_checker::find_url(Server& server)
 			if (tem_location == tem_url)
 				info.same_location = true;
 			if ( i->second.getLimitExcept().size() != 0)
-			{	
+			{
 				std::size_t j = 0;
 				for (;j < i->second.getLimitExcept().size(); j++)
 					if (i->second.getLimitExcept()[j] == info.method)
 						break ;
 				if (j == i->second.getLimitExcept().size())
-				{		
+				{
 					info.status = "403";
-				}			
+				}
 			}
 			if ((redirect_Uri = i->second.getRedirection()) != "")
 			{
 				root = redirect_Uri;
 				info.status = "301";
-				return (root);				
+				return (root);
 			}
 			info.autoindex = i->second.getAutoIndex();
-			info.cgi_path = i->second.getCgiPath();	
+			info.cgi_path = i->second.getCgiPath();
 			if (i->second.getRoot() != "")
 			{
 				root = i->second.getRoot() + url;
 				info.location_uri += i->second.getRoot() + url;
-			}				
+			}
 			else
 			{
 				root = server.getRoot() + url;
@@ -132,7 +132,7 @@ std::string	msg_checker::find_url(Server& server)
 					}
 				}
 				if (i == cgi.size())
-					info.is_cgi = false;			
+					info.is_cgi = false;
 			}
 			return (root);
 		}
@@ -174,16 +174,19 @@ void msg_checker::pase_body_for_post(std::map<std::string, std::string> &map)
         std::string  Disposition = map["Content-Disposition"];
         ft::ft_strtok(Disposition, "=");
         ft::ft_strtok(Disposition, "=");
-        int size = Disposition.size();
+        unsigned long size = Disposition.size();
         info.body_filename = Disposition.substr(1, size - 2);
         ft::ft_strtok(info.body, "\n");
         ft::ft_strtok(info.body, "\n");
         ft::ft_strtok(info.body, "\n");
         ft::ft_strtok(info.body, "\n");
         size = info.body.find(line.c_str());
-        std::string tem = info.body.substr(0, size);
-        info.body.clear();
-        info.body = tem;
+		if (size != std::string::npos)
+        {
+			std::string tem = info.body.substr(0, size);
+			info.body.clear();
+			info.body = tem;
+		}
     }
 }
 
@@ -209,11 +212,11 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		info.status = "414";
 		return (info);
 	}
-	
+
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
 	ft::split(map["Accept"], " ,", info.accept); // 값이 없으면 모든 미디어 유형 / 서버가 지원하지 않는경우 [406]
-	ft::split(map["Accept-Language"], " ,", info.accept_Language);	
+	ft::split(map["Accept-Language"], " ,", info.accept_Language);
 	ft::split(map["Accept-Encoding"], " ,", info.accept_Encoding); // 헤더에 따라 수용 가능한 응답을 보낼 수 없는 경우 서버는 [406(Not Acceptable)] 상태 코드와 함께 오류 응답
 	info.user_Agent = map["User-Agent"]; // 여러 제품 토큰과 사용자 에이전트의 중요한 부분을 구성하는 에이전트 및 하위 제품을 식별하는 설명
 
@@ -240,14 +243,14 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		}
 		info.body_size = info.body.size();
 		if (info.body.size() == 0)
-			info.status = "204";		
+			info.status = "204";
 	}
 	std::map<int, Server>::iterator server_iter = WEBSERVER->getServerList().begin();
 	for (; server_iter != WEBSERVER->getServerList().end(); server_iter++)
 	{
 		if (server_iter->second.getServerName() == info.host)
 		{
-			std::vector<unsigned short>::iterator listen_iter = server_iter->second.getPorts().begin(); 
+			std::vector<unsigned short>::iterator listen_iter = server_iter->second.getPorts().begin();
 			for (; listen_iter != server_iter->second.getPorts().end(); listen_iter++)
 			{
 				if (*listen_iter == info.port)
@@ -269,7 +272,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 		server_iter = WEBSERVER->getServerList().begin();
 		for (; server_iter != WEBSERVER->getServerList().end(); server_iter++)
 		{
-			std::vector<unsigned short>::iterator listen_iter = server_iter->second.getPorts().begin(); 
+			std::vector<unsigned short>::iterator listen_iter = server_iter->second.getPorts().begin();
 			for (; listen_iter != server_iter->second.getPorts().end(); listen_iter++)
 			{
 				if (*listen_iter == info.port)
