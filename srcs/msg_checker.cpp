@@ -30,7 +30,7 @@ void msg_checker::check_indexfile(std::string& root, std::vector<std::string> v_
 		}
 		else// 경로만 있을때
 		{
-			if (tem.back() != '/')
+			if (tem[tem.size() - 1] != '/')
 				tem.push_back('/');
 			//index가 있는지 없지 if문 만들고 그안에 넣기
 			for (std::size_t i = 0;  i != v_index.size(); i++)
@@ -65,7 +65,7 @@ std::string	msg_checker::find_url(Server& server)
 	const std::string url = info.url_abs_path;
 	std::string redirect_Uri;
 	std::string root;
-	int idx;
+	std::string::size_type idx;
 	std::vector<std::string> server_index = server.getDifaultFiles();
 	
 	iter start = server.getLocations().rbegin();
@@ -78,9 +78,9 @@ std::string	msg_checker::find_url(Server& server)
 		size_t len = location.size();
 		if (url.compare(0, len, location) == 0)
 		{
-			if (tem_url.back() != '/')
+			if (tem_url[tem_url.size() - 1] != '/')
 				tem_url.push_back('/');
-			if (tem_location.back() != '/')
+			if (tem_location[tem_location.size() - 1] != '/')
 				tem_location.push_back('/');
 			if (tem_location == tem_url)
 				info.same_location = true;

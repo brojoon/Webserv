@@ -36,7 +36,7 @@ std::string client::_autoindex()
 				else if (ent->d_name == std::string(".."))
 				{
 					std::string test = t2;
-					test.pop_back();
+					test.erase(test.begin() + test.size() - 1);
 					std::string test2;
 					test2.assign(test, 0, test.find_last_of("/") + 1);
 					ret += test2;
@@ -75,21 +75,21 @@ void client::parse_msg(std::string &src)
 
 std::string chunk_check(std::string &src, int pos)
 {
-	int start = pos;
-	int end;
-	long len;
+	std::string::size_type start = (std::string::size_type)pos;
+	std::string::size_type end;
+	std::string::size_type len;
 	std::string body;
 
 	while (1)
 	{
-		end = src.find_first_of("\r", start) + 1;
+		end = ft::find_first_of(src.c_str(), "\r", start) + 1;
 		len = hexaStringToLong(src.substr(start, end - start -1));
 		std::cout << "start : " << start << "   end: " << end << std::endl;
 		std::cout << "len : " << len << std::endl;
 		if (end == std::string::npos || (src[start] == '0' && start == src.size() - 1))
 			break;
 		start = end + 1;
-		end = src.find_first_of("\r", start) - 1;
+		end = ft::find_first_of(src.c_str(), "\r", start) - 1;
 		std::cout << "start : " << start << "   end: " << end << std::endl;
 		if (len == (end - start + 1))
 			std::cout << "ok\n" << std::endl;
@@ -107,7 +107,7 @@ client::client(int socket, int port)
 	//std::cout << "constructor" << std::endl;
 	int ret, bufsize = 4096;
 	char buf[bufsize];
-	char buf2[1];
+	//char buf2[1];
 	static std::map<int, std::string> map;
 	std::string content;
 	//std::string str;
@@ -118,17 +118,16 @@ client::client(int socket, int port)
 	is_read_end = false;
 	if (ret <= 0)
 	{
-		//std::cout << "disconnected: " << socket << std::endl;
+		std::cout << "disconnected: " << socket << std::endl;
 		FD_CLR(socket, &WEBSERVER->getReadSet());
 		FD_CLR(socket, &WEBSERVER->getWriteSet());
 		close(socket);
 		WEBSERVER->getClientSockets().erase(socket);
-		// for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
-		// it != WEBSERVER->getClientSockets().end(); it++)
-		// {
-		// 	std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
-		// }
-		std::cout << "ret 이 음수" << std::endl;
+		for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
+		it != WEBSERVER->getClientSockets().end(); it++)
+		{
+			std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
+		}
 		is_read_end = true;
 		return;
 	}
@@ -144,12 +143,12 @@ client::client(int socket, int port)
 		{
 			parse_msg(map[socket]);
 			length = atoi(_header_field["Content-Length"].c_str());
+			std::cout << "length: " << std::endl;
 		}
 		if (_header_field.find("Content-Length") != _header_field.end())
 		{
-			if (length > (map[socket].size() - pos))
+			if ((unsigned long)length > (map[socket].size() - pos))
 			{
-				std::cout << "length: " << length << std::endl;
 				std::cout << (map[socket].size()) << "    "  << pos << std::endl;
 				flag[socket] = false;
 				return ;
@@ -158,21 +157,22 @@ client::client(int socket, int port)
 			{
 				std::cout << "length: " << length << std::endl;
 				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
-				if (length > bufsize)
-				{
-					FILE *fp_bin = fopen("./var/www/html/upload/ex2.jpg", "wb");
-					std::cout << "body size: " << _header_field["body"].size() << std::endl;
-					int i = 0;
-					for (std::string::iterator it = _header_field["body"].begin();
-							it != _header_field["body"].end(); it++)
-					{
-						buf2[0] = *it;
-						fwrite(buf2, 1, 1, fp_bin);
-						i++;
-					}
-					fclose(fp_bin);
-					std::cout << "i : " << i << std::endl;
-				}
+				// if (length > bufsize)
+				// {
+				// 	FILE *fp_bin = fopen("./var/www/html/upload/ex2.jpg", "wb");
+				// 	std::cout << "body size: " << _header_field["body"].size() << std::endl;
+				// 	int i = 0;
+				// 	for (std::string::iterator it = _header_field["body"].begin();
+				// 			it != _header_field["body"].end(); it++)
+				// 	{
+				// 		buf2[0] = *it;
+				// 		fwrite(buf2, 1, 1, fp_bin);
+				// 		i++;
+				// 	}
+				// 	fclose(fp_bin);
+				// 	std::cout << "i : " << i << std::endl;
+				// }
+				map[socket].clear();
 				flag[socket] = true;
 			}
 		}
@@ -182,6 +182,7 @@ client::client(int socket, int port)
 			{
 				_header_field["body"] =  chunk_check(map[socket], pos);
 				flag[socket] = true;
+				map[socket].clear();
 			}
 			else
 			{
@@ -192,12 +193,13 @@ client::client(int socket, int port)
 		else
 		{
 			flag[socket] = true;
+			map[socket].clear();
 		}
 		if (flag[socket] == true)
 		{
 			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
 			map[socket].clear();
-			}
+		}
 	}
 	else // 더 읽어들여야함
 	{
@@ -233,7 +235,9 @@ std::string client::get_response()
 		ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
 		body = _autoindex();
 		s = body.size();
-		ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
+		std::stringstream ss;
+		ss << s;
+		ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
 		ret += std::string("\r\n");
 		ret += body;
 		return ret;
@@ -292,7 +296,9 @@ std::string client::get_response()
 	}
 
 	s = body.size();
-	ret += std::string("content-length: ")+ std::to_string(s) + std::string("\r\n");
+	std::stringstream ss;
+	ss << s;
+	ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
 	ret += std::string("\r\n");
 	ret += body;
 	return ret;
@@ -315,9 +321,11 @@ std::string client::cgi_process()
     argv[0] = strdup(_info.cgi_path.c_str());
     argv[1] = strdup(("." + _info.url_abs_path).c_str());
 	argv[2] = NULL;
+	std::stringstream ss;
+	ss << _info.port;
 
     char **env = ft::env("0", _info.extention, _info.url_abs_path, _info.query,\
-    		_info.method,_info.host, std::to_string(_info.port), _info.version).get_env();
+    		_info.method,_info.host, ss.str(), _info.version).get_env();
 
     int nbytes;
     char inbuf[200];
@@ -363,7 +371,7 @@ std::string client::cgi_process()
     std::string::size_type idx = 0;
     while (idx < ret.size())
     {
-        idx = ret.find_first_of("\n", idx);
+        idx = ft::find_first_of(ret.c_str(), "\n", idx);
         if (ret[idx + 1] == '\r')
         {
             ret.erase(0, idx + 3);

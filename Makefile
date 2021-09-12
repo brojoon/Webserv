@@ -3,7 +3,7 @@ NAME = webserv
 
 CC = clang++
 
-CFLAGS =  -I ./includes
+CFLAGS = -Wall -Wextra -Werror -I ./includes -std=c++98
 
 SRCSDIR = ./srcs/
 
@@ -19,7 +19,7 @@ $(NAME): $(OBJS)
 	@echo Compiling $(NAME)
 	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS) -fsanitize=address
 
-%.o: %.cpp %.hpp
+%.o: %.cpp
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 clean: 

@@ -279,10 +279,9 @@ void Webserver::error_handling(const char* message)
 
 void Webserver::initWebServer()
 {
-	int serv_sock, clnt_sock;
-	struct sockaddr_in serv_adr, clnt_adr;
+ 	int clnt_sock;
+	struct sockaddr_in clnt_adr;
 	socklen_t clnt_adr_size;
-	char buf[BUF_SIZE];
 	int socketnum = 0;
 	bool connected;
 
@@ -292,7 +291,7 @@ void Webserver::initWebServer()
 	int ret;
 	int port;
 	int select_count = 1;
-	struct timeval timeout;
+	//struct timeval timeout;
 
 	
 	// serv_sock=socket(PF_INET, SOCK_STREAM, 0);
@@ -330,9 +329,8 @@ void Webserver::initWebServer()
 	}
 
 	fd_max = instance->server_sockets.rbegin()->first;
-	//std::cout << "fd_max : " << fd_max << std::endl;
+	std::cout << "fd_max : " << fd_max << std::endl;
 
-	int test;
 	while(1)
 	{
 		//timeout.tv_sec = 5;
@@ -340,10 +338,7 @@ void Webserver::initWebServer()
 		instance->read_temp = instance->read_set;
 		instance->write_temp = instance->write_set;
 		std::cout << "select count: " << select_count++ <<  std::endl;
-		//std::cout << "tets  " << test << std::endl;
-		//std::cout << FD_ISSET(test, &instance->read_set) << std::endl;
 		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, 0);
-		//std::cout << "selecting... return !!!!" << std::endl;
 
 		if (ret < 0)
 		{
@@ -367,13 +362,12 @@ void Webserver::initWebServer()
 					{
 						if (it->first == i)
 						{
-							//std::cout << "new clnt is connected" << std::endl;
+							std::cout << "new clnt is connected" << std::endl;
 							clnt_adr_size = sizeof(clnt_adr);
 							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
-							test = clnt_sock;
-							//std::cout << "clnt sock  " << clnt_sock << std::endl;
+							std::cout << "clnt sock  " << clnt_sock << std::endl;
 							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
-							//std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
+							std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
 							fcntl(clnt_sock, F_SETFL, O_NONBLOCK);
 							FD_SET(clnt_sock, &instance->read_set);
 							if (fd_max < instance->client_sockets.rbegin()->first)
@@ -384,9 +378,9 @@ void Webserver::initWebServer()
 					}
 					if (connected != true) //read message
 					{
-						//std::cout << "client socket read : " << i << std::endl;
+						std::cout << "client socket read : " << i << std::endl;
 						port = ntohs(instance->client_sockets[i]);
-						//std::cout << "port : " << port << std::endl;
+						std::cout << "port : " << port << std::endl;
 						client obj(i, port);
 						if (obj.isReadEnd() == true)
 							continue;
@@ -399,7 +393,7 @@ void Webserver::initWebServer()
 				}
 				if (FD_ISSET(i, &instance->write_temp) && !FD_ISSET(i, &instance->read_temp))
 				{
-					//std::cout << "client socket write : " << i << std::endl;
+					std::cout << "client socket write : " << i << std::endl;
 					if (write(i, response_list[i].c_str(), response_list[i].size()) <= 0)
 					{
 						FD_CLR(i, &instance->write_set);
@@ -414,7 +408,6 @@ void Webserver::initWebServer()
 			}
 		}
 	}
-	close(serv_sock);
 
 }
 

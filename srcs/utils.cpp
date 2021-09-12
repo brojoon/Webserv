@@ -116,12 +116,33 @@ namespace ft
 		}
 		return false;
 	}
+
+	std::string::size_type find_first_of(const char *src, const char *find_in_str, std::string::size_type pos)
+	{
+		int i;
+		if (src == NULL || find_in_str == NULL)
+			return std::string::npos;
+		while (src[pos] != '\0')
+		{
+			i = 0;
+
+			while (find_in_str[i] != '\0')
+			{
+				if (find_in_str[i] == src[pos])
+					return pos;
+				i++;
+			}
+			pos++;
+		}
+		return std::string::npos;
+	}
+
 	std::string get_next_line(const std::string &src)
 	{
-		static int end = 0;
+		static std::string::size_type end = 0;
 
 		const int _size = src.size();
-		int start = ((end == 0) ? 0 : end + 2);
+		std::string::size_type start = ((end == 0) ? 0 : end + 2);
 		std::string ret;
 
 		if (end == std::string::npos)
@@ -130,7 +151,7 @@ namespace ft
 			ret = "\n\n";
 			return ret;
 		}
-		end = src.find_first_of("\r", start);
+		end = find_first_of(src.c_str(), "\r", start);
 		if (end == std::string::npos)//last line
 			ret = src.substr(start, _size - start);
 		else
@@ -141,7 +162,7 @@ namespace ft
 	std::string ft_strtok(std::string &src, std::string deli)//인자로 들어온 src를 참조만 하는게 아니라, 편집도 함
 	{
 		int start = 0;
-		int end = src.find_first_of(deli);
+		std::string::size_type end = find_first_of(src.c_str(), deli.c_str(), 0);
 		std::string ret;
 		if (end == std::string::npos)
 		{
@@ -205,7 +226,6 @@ namespace ft
 	{
 		long ret = 0;
 		std::map<char, int> map;
-		char c = 'a';
 		int size = str.size();
 		int temp;
 		for (int i = 0; i < size; i++)
