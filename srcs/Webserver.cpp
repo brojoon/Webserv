@@ -24,14 +24,14 @@ Webserver::~Webserver()
 	{
 		FD_CLR(it->first, &instance->read_set);
 		FD_CLR(it->first, &instance->write_set);
-		//std::cout << "deleted clt socket : " << it->first << std::endl;
+		std::cout << "deleted clt socket : " << it->first << std::endl;
 		close(it->first);
 	}
 	for (std::map<int, ServerFD>::iterator it = instance->server_sockets.begin();
 		it != instance->server_sockets.end(); it++)
 	{
 		FD_CLR(it->first, &instance->read_set);
-		//std::cout << "deleted serv socket : " << it->first << std::endl;
+		std::cout << "deleted serv socket : " << it->first << std::endl;
 		close(it->first);
 	}
 }
@@ -61,6 +61,11 @@ std::map<int, unsigned short> &Webserver::getClientSockets()
 std::map<int, ServerFD> &Webserver::getServerSockets()
 {
 	return this->server_sockets;
+}
+
+std::map<int, bool> &Webserver::getIsSocketEnd()
+{
+	return this->is_socket_end;
 }
 
 fd_set &Webserver::getReadSet()
@@ -290,7 +295,7 @@ void Webserver::initWebServer()
 	int fd_max;
 	int ret;
 	int port;
-	//int select_count = 1;
+	int select_count = 1;
 	//struct timeval timeout;
 
 	
@@ -304,11 +309,12 @@ void Webserver::initWebServer()
 	// if(listen(serv_sock, 1024)==-1)
 	// 	error_handling("listen() error");
 
-	//
 	for (std::set<unsigned short>::iterator it = instance->listen_port.begin();
 		it != instance->listen_port.end(); it++)
 	{
 		socketnum = socket(PF_INET, SOCK_STREAM, 0);
+		if (socketnum == -1)
+			error_handling("socket() error");
 		int opt = 1;
 		setsockopt(socketnum, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)); 
 		instance->server_sockets[socketnum];
@@ -337,7 +343,7 @@ void Webserver::initWebServer()
 		//timeout.tv_usec = 500;
 		instance->read_temp = instance->read_set;
 		instance->write_temp = instance->write_set;
-		//std::cout << "select count: " << select_count++ <<  std::endl;
+		std::cout << "select count: " << select_count++ <<  std::endl;
 		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, 0);
 
 		if (ret < 0)
@@ -352,7 +358,7 @@ void Webserver::initWebServer()
 		}
 		else
 		{
-			for (int i = 0; i < fd_max + 1; i++)
+			for (int i = 3; i < fd_max + 1; i++)
 			{
 				if (FD_ISSET(i, &instance->read_temp))
 				{
@@ -365,8 +371,11 @@ void Webserver::initWebServer()
 							std::cout << "new clnt is connected" << std::endl;
 							clnt_adr_size = sizeof(clnt_adr);
 							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
+							if (clnt_sock == -1)
+								error_handling("accept() error");
 							std::cout << "clnt sock  " << clnt_sock << std::endl;
 							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
+							instance->is_socket_end[clnt_sock] = false;
 							std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
 							fcntl(clnt_sock, F_SETFL, O_NONBLOCK);
 							FD_SET(clnt_sock, &instance->read_set);
@@ -378,9 +387,9 @@ void Webserver::initWebServer()
 					}
 					if (connected != true) //read message
 					{
-						//std::cout << "client socket read : " << i << std::endl;
+						std::cout << "client socket read : " << i << std::endl;
 						port = ntohs(instance->client_sockets[i]);
-						//std::cout << "port : " << port << std::endl;
+						std::cout << "port : " << port << std::endl;
 						client obj(i, port);
 						if (obj.isReadEnd() == true)
 							continue;
@@ -391,9 +400,9 @@ void Webserver::initWebServer()
 						FD_SET(i, &instance->write_set);
 					}
 				}
-				if (FD_ISSET(i, &instance->write_temp) && !FD_ISSET(i, &instance->read_temp))
+				if (FD_ISSET(i, &instance->write_temp) && !FD_ISSET(i, &instance->read_temp)) //write 
 				{
-					//std::cout << "client socket write : " << i << std::endl;
+					std::cout << "client socket write : " << i << std::endl;
 					if (write(i, response_list[i].c_str(), response_list[i].size()) <= 0)
 					{
 						FD_CLR(i, &instance->write_set);
@@ -402,7 +411,16 @@ void Webserver::initWebServer()
 						instance->client_sockets.erase(i);
 					}
 					else
-						FD_CLR(i, &instance->write_set);
+					{
+						if (instance->is_socket_end[i] == true)
+						{
+							FD_CLR(i, &instance->write_set);
+							close(i);
+							instance->client_sockets.erase(i);
+						}
+						else
+							FD_CLR(i, &instance->write_set);
+					}
 					response_list[i].clear();
 				}
 			}
