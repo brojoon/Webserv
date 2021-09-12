@@ -133,7 +133,7 @@ client::client(int socket, int port)
 	}
 	for(int i = 0; i < ret; i++)
 		map[socket] += buf[i];
-	std::cout << "map socket size: " << map[socket].size() << std::endl;
+	//std::cout << "map socket size: " << map[socket].size() << std::endl;
 	buf[ret] = 0;
 
 	int length;
@@ -143,19 +143,19 @@ client::client(int socket, int port)
 		{
 			parse_msg(map[socket]);
 			length = atoi(_header_field["Content-Length"].c_str());
-			std::cout << "length: " << std::endl;
+			//std::cout << "length: " << std::endl;
 		}
 		if (_header_field.find("Content-Length") != _header_field.end())
 		{
 			if ((unsigned long)length > (map[socket].size() - pos))
 			{
-				std::cout << (map[socket].size()) << "    "  << pos << std::endl;
+				//std::cout << (map[socket].size()) << "    "  << pos << std::endl;
 				flag[socket] = false;
 				return ;
 			}
 			else
 			{
-				std::cout << "length: " << length << std::endl;
+				//std::cout << "length: " << length << std::endl;
 				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
 				// if (length > bufsize)
 				// {
@@ -211,11 +211,34 @@ client::client(int socket, int port)
 
 void	client::post_upload()
 {
-	std::string _abs_path = "." + _info.url_abs_path;
-	std::ofstream file(_abs_path.c_str());
-	if (file.is_open())
-		file << _info.body;
-	file.close();
+		if (_info.body_size > (int)_info.max_body_size)
+		{
+			_info.post_err = true;
+			_info.query = "erro=파일 크기 제한 0.5M!!";
+
+			return ;
+		}
+		if (_info.extention != ".jpg" && _info.extention != ".png" && _info.extention != ".JPEG"
+			&& _info.extention != ".php" && _info.extention != ".html" && _info.extention != ".htm")
+		{
+			_info.post_err = true;
+			_info.query = "erro=업로드 가능 파일 형식 => jpg/jpeg/png, html/htm, php";
+			return ;
+		}
+		if (_info.post_err == false)
+		{
+			std::string _abs_path = "." + _info.url_abs_path;
+			std::ofstream file(_abs_path.c_str());
+			if (file.is_open())
+				file << _info.body;
+			else
+			{
+				_info.post_err = true;
+				_info.query = "erro=파일 저장에 실패 하였습니다";
+			}
+			file.close();
+			return ;
+		}
 }
 
 std::string client::get_response()
@@ -257,7 +280,7 @@ std::string client::get_response()
 	else if (_info.method == "DELETE" && _info.status == "204")
 	{
 		ret += std::string("\r\n");
-		return ret;
+			return ret;
 	}
 	else if (_info.status == "301")
 	{
@@ -266,9 +289,20 @@ std::string client::get_response()
 	}
 	else if (_info.method == "POST" && _info.is_file)
 	{
-		if (!_info.is_cgi)
-			_abs_path = "." + _info.url_abs_path;
-		ret += std::string("Location: ./upload/") + _info.body_filename + std::string("\r\n");
+		if(!_info.post_err)
+		{
+			if (!_info.is_cgi)
+				_abs_path = "." + _info.url_abs_path;
+			ret += std::string("Location: ./upload/") + _info.body_filename + std::string("\r\n");
+		}
+		else
+		{
+			_info.url_abs_path.clear();
+			_info.url_abs_path = "/var/www/html/upload/default.php";
+			_info.extention = ".php";
+			_info.is_cgi = true;
+			ret += std::string("Location: ./var/www/html/upload/default.php") + std::string("\r\n");
+		}
 	}
 	else if (_info.status == "501")
 	{
@@ -323,7 +357,7 @@ std::string client::cgi_process()
 	argv[2] = NULL;
 	std::stringstream ss;
 	ss << _info.port;
-
+	
     char **env = ft::env("0", _info.extention, _info.url_abs_path, _info.query,\
     		_info.method,_info.host, ss.str(), _info.version).get_env();
 

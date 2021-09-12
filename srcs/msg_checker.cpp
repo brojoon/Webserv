@@ -71,7 +71,7 @@ std::string	msg_checker::find_url(Server& server)
 	iter start = server.getLocations().rbegin();
 	iter end = server.getLocations().rend();
 	for (iter i = start; i != end; i++)
-	{
+	{		
 		std::string location = i->first;
 		std::string tem_url = url;
 		std::string tem_location = location;
@@ -142,44 +142,49 @@ std::string	msg_checker::find_url(Server& server)
 	check_indexfile(root, server_index);
 	return (root);
 }
-
 void msg_checker::pase_body_for_post(std::map<std::string, std::string> &map)
 {
-	std::string str;
-	std::string key;
-	std::string value;
-	std::string line;
-	int i = 3;
-	while ( i != 0 &&((str = ft::get_next_line(info.body)) != "\n\n") && info.body != "")
-	{
-		if (i == 3)
-			line = str;
-		else
-		{
-			key = ft::ft_strtok(str, " :");
-			value = str;
-			map[key] = value;
-		}
-		i--;
-	}
-	if ( map["Content-Disposition"] != "")
-	{
-		info.is_file = true;
-		info.body_type = map["Content-Type"];
-		std::string  Disposition = map["Content-Disposition"];
-		ft::ft_strtok(Disposition, "=");
-		ft::ft_strtok(Disposition, "=");
-		int size = Disposition.size();
-		info.body_filename = Disposition.substr(1, size - 3);
-		ft::ft_strtok(info.body, "\n");
-		ft::ft_strtok(info.body, "\n");
-		ft::ft_strtok(info.body, "\n");
-		ft::ft_strtok(info.body, "\n");
-		size = info.body.find(line.c_str());
-		std::string tem = info.body.substr(0, size);
-		info.body.clear();
-		info.body = tem;
-	}
+    std::string str;
+    std::string key;
+    std::string value;
+    std::string line;
+    int i = 3;
+    while ( i != 0 &&((str = ft::get_next_line(info.body)) != "\n\n") && info.body != "")
+    {
+        if (i == 3)
+            line = str;
+        else
+        {
+            key = ft::ft_strtok(str, " :");
+            value = str;
+            map[key] = value;
+        }
+        i--;
+    }
+    if (str != "\n\n")
+    {
+        std::string temp;
+        while ((temp = ft::get_next_line(info.body)) != "\n\n")
+        {}
+    }
+    if ( map["Content-Disposition"] != "")
+    {
+        info.is_file = true;
+        info.body_type = map["Content-Type"];
+        std::string  Disposition = map["Content-Disposition"];
+        ft::ft_strtok(Disposition, "=");
+        ft::ft_strtok(Disposition, "=");
+        int size = Disposition.size();
+        info.body_filename = Disposition.substr(1, size - 2);
+        ft::ft_strtok(info.body, "\n");
+        ft::ft_strtok(info.body, "\n");
+        ft::ft_strtok(info.body, "\n");
+        ft::ft_strtok(info.body, "\n");
+        size = info.body.find(line.c_str());
+        std::string tem = info.body.substr(0, size);
+        info.body.clear();
+        info.body = tem;
+    }
 }
 
 msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std::string, std::string> &map, int port)
@@ -189,6 +194,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.same_location = false;
 	info.autoindex = false;
 	info.is_file = false;
+	info.post_err = false;
 	info.location_uri = "";
 	info.body_size = 0;
 	info.host = map["Host"];
@@ -232,6 +238,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 			info.body = map["body"];
 			info.query = info.body;
 		}
+		info.body_size = info.body.size();
 		if (info.body.size() == 0)
 			info.status = "204";		
 	}

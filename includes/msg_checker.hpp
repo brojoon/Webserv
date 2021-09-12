@@ -33,7 +33,8 @@ class msg_checker
 			std::string body_type;
 			std::string body_filename;
 			bool		is_file;
-
+			bool		post_err;
+			
 			unsigned int max_body_size;
 			bool		autoindex;
 

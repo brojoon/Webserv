@@ -290,7 +290,7 @@ void Webserver::initWebServer()
 	int fd_max;
 	int ret;
 	int port;
-	int select_count = 1;
+	//int select_count = 1;
 	//struct timeval timeout;
 
 	
@@ -337,7 +337,7 @@ void Webserver::initWebServer()
 		//timeout.tv_usec = 500;
 		instance->read_temp = instance->read_set;
 		instance->write_temp = instance->write_set;
-		std::cout << "select count: " << select_count++ <<  std::endl;
+		//std::cout << "select count: " << select_count++ <<  std::endl;
 		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, 0);
 
 		if (ret < 0)
@@ -378,9 +378,9 @@ void Webserver::initWebServer()
 					}
 					if (connected != true) //read message
 					{
-						std::cout << "client socket read : " << i << std::endl;
+						//std::cout << "client socket read : " << i << std::endl;
 						port = ntohs(instance->client_sockets[i]);
-						std::cout << "port : " << port << std::endl;
+						//std::cout << "port : " << port << std::endl;
 						client obj(i, port);
 						if (obj.isReadEnd() == true)
 							continue;
@@ -393,7 +393,7 @@ void Webserver::initWebServer()
 				}
 				if (FD_ISSET(i, &instance->write_temp) && !FD_ISSET(i, &instance->read_temp))
 				{
-					std::cout << "client socket write : " << i << std::endl;
+					//std::cout << "client socket write : " << i << std::endl;
 					if (write(i, response_list[i].c_str(), response_list[i].size()) <= 0)
 					{
 						FD_CLR(i, &instance->write_set);
