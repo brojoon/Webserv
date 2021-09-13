@@ -76,7 +76,7 @@ void client::parse_msg(std::string &src)
 
 }
 
-std::string chunk_check(std::string &src, int pos)
+std::string client::chunk_check(std::string &src, int pos)
 {
 	std::string::size_type start = (std::string::size_type)pos;
 	std::string::size_type end;
@@ -91,10 +91,11 @@ std::string chunk_check(std::string &src, int pos)
 			break;
 		start = end + 1;
 		end = ft::find_first_of(src.c_str(), "\r", start) - 1;
-		if (len == (end - start + 1))
-			std::cout << "ok\n" << std::endl;
-		else
-			std::cout << "error\n" << std::endl;
+		if (len != (end - start + 1))
+		{
+			chunk_error = true;
+			return std::string();
+		}
 		body += src.substr(start, end - start + 1);
 		start = end + 3;
 	}
@@ -102,7 +103,7 @@ std::string chunk_check(std::string &src, int pos)
 }
 
 
-client::client(int socket, int port)
+client::client(int socket, int port):chunk_error(false)
 {
 	int ret, bufsize = 4096;
 	char buf[bufsize];
@@ -140,7 +141,23 @@ client::client(int socket, int port)
 			parse_msg(map[socket]);
 			length = atoi(_header_field["Content-Length"].c_str());
 		}
-		if (_header_field.find("Content-Length") != _header_field.end())
+		
+		if (_header_field.find("Transfer-Encoding") != _header_field.end())
+		{
+			if (map[socket][map[socket].size() - 3] == '0' && map[socket][map[socket].size() - 2] == '\r' \
+				&& map[socket][map[socket].size() - 1] == '\n')
+			{
+				_header_field["body"] =  chunk_check(map[socket], pos);
+				flag[socket] = true;
+				map[socket].clear();
+			}
+			else
+			{
+				flag[socket] = false;
+				return ;
+			}
+		}
+		else if (_header_field.find("Content-Length") != _header_field.end())
 		{
 			for (std::map<int, Server>::iterator it = WEBSERVER->getServerList().begin();
 				it != WEBSERVER->getServerList().end(); it++)
@@ -179,21 +196,6 @@ client::client(int socket, int port)
 				flag[socket] = true;
 			}
 		}
-		else if (_header_field.find("Transfer-Encoding") != _header_field.end())
-		{
-			if (map[socket][map[socket].size() - 3] == '0' && map[socket][map[socket].size() - 2] == '\r' \
-				&& map[socket][map[socket].size() - 1] == '\n')
-			{
-				_header_field["body"] =  chunk_check(map[socket], pos);
-				flag[socket] = true;
-				map[socket].clear();
-			}
-			else
-			{
-				flag[socket] = false;
-				return ;
-			}
-		}
 		else
 		{
 			flag[socket] = true;
@@ -230,7 +232,7 @@ std::string client::get_response()
 	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
 
-	if (_info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414" || _info.status == "413")
+	if (_info.status == "400" || _info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414" || _info.status == "413")
 	{
 		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
 		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
@@ -322,6 +324,11 @@ void client::exe_method()
 		delet_file();
 	if (_info.method == "POST" && _info.is_file && _info.status != "204")
 		post_upload();
+	if (chunk_error)
+	{
+		_info.status = "400";
+		chunk_error = false;
+	}
 }
 
 void	client::post_upload()
@@ -409,7 +416,7 @@ std::string client::cgi_process()
 
         close(pip[1]);
 		waitpid(pid, &status, 0);
-		if (status = -1)
+		if (status == -1)
 		{
 			free(argv[0]);
 			free(argv[1]);

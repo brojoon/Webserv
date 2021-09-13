@@ -100,7 +100,7 @@ namespace ft
 	bool isMethods(const std::string &src)
 	{
 		if (src == "GET" || src == "POST" \
-			 || src == "DELETE" || src == "PUT")
+			 || src == "DELETE")
 		{
 			return true;
 		}

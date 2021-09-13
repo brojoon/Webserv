@@ -34,6 +34,7 @@ class client
 
 	private:
 		int socket_num;
+		bool chunk_error;
 		//리퀘스트 메시지 파싱
 		void parse_msg(std::string &request_msg);
 		//리퀘스트 메시지 파싱해서 아래의 두 변수에 저장
@@ -47,6 +48,7 @@ class client
 		std::string _autoindex();
 		std::map<int, bool> flag;
 		bool is_read_end;
+		std::string chunk_check(std::string &src, int pos);
 	public:
 		client(std::string request_msg);
 		client(int socket, int port);
