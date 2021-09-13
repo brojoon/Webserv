@@ -106,12 +106,32 @@ client::client(int socket, int port):chunk_error(false)
 	static std::map<int, std::string> map;
 	std::string content;
 	int pos;
+	int length = 0;
 	pos = ft_contain(map[socket], "\r\n\r\n");
 	ret = read(socket, buf, bufsize - 1);
 	socket_num = socket;
 	is_read_end = false;
 	if (ret <= 0)
 	{
+		if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
+		{
+			if (_header_field.find("Content-Length") != _header_field.end())
+			{
+				length = atoi(_header_field["Content-Length"].c_str());
+				if (length > (int)map[socket].size() - pos)
+				{
+					_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
+					std::cout << "body size : " << _header_field["body"].size() << std::endl;
+					flag[socket] = true;
+					FD_CLR(socket, &WEBSERVER->getReadSet());
+					shutdown(socket, SHUT_RD);
+					WEBSERVER->getIsSocketEnd()[socket] = true;
+					_info = msg_checker().check(_first_line, _header_field, port);
+					_info.status = "400";
+					map[socket].clear();
+				}
+			}
+		}
 		std::cout << "disconnected: " << socket << std::endl;
 		FD_CLR(socket, &WEBSERVER->getReadSet());
 		FD_CLR(socket, &WEBSERVER->getWriteSet());
@@ -129,7 +149,6 @@ client::client(int socket, int port):chunk_error(false)
 		map[socket] += buf[i];
 	std::cout << "현재 map size()" << map[socket].size() << std::endl;
 	buf[ret] = 0;
-	int length = 0;
 	if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
 	{
 		if (_header_field.find("Host") == _header_field.end())
@@ -155,6 +174,18 @@ client::client(int socket, int port):chunk_error(false)
 		}
 		else if (_header_field.find("Content-Length") != _header_field.end())
 		{
+			if (length < (int)(map[socket].size() - pos))
+			{
+				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
+				std::cout << "body size : " << _header_field["body"].size() << std::endl;
+				flag[socket] = true;
+				FD_CLR(socket, &WEBSERVER->getReadSet());
+				shutdown(socket, SHUT_RD);
+				WEBSERVER->getIsSocketEnd()[socket] = true;
+				_info = msg_checker().check(_first_line, _header_field, port);
+				_info.status = "400";
+				map[socket].clear();
+			}
 			for (std::map<int, Server>::iterator it = WEBSERVER->getServerList().begin();
 				it != WEBSERVER->getServerList().end(); it++)
 			{
