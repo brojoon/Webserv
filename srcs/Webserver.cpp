@@ -316,7 +316,8 @@ void Webserver::initWebServer()
 		if (socketnum == -1)
 			error_handling("socket() error");
 		int opt = 1;
-		setsockopt(socketnum, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)); 
+		setsockopt(socketnum, SOL_SOCKET, SO_REUSEADDR , &opt, sizeof(opt));
+		setsockopt(socketnum, SOL_SOCKET,  SO_RCVBUF, &opt, sizeof(opt)); 
 		instance->server_sockets[socketnum];
 		instance->server_sockets[socketnum].socket = socketnum;
 		memset(&instance->server_sockets[socketnum].serv_adr, 0, sizeof(instance->server_sockets[socketnum].serv_adr));

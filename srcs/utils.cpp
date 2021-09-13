@@ -412,6 +412,7 @@ namespace ft
 		_err["408"] = "Request timeout";
 		_err["410"] = "Gone";
 		_err["412"] = "Precondition failed";
+		_err["413"] = "Request Entity Too Large";
 		_err["414"] = "Request-URI too long";
 
 		_err["500"] = "Internal server error";

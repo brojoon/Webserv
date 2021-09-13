@@ -50,7 +50,7 @@ std::string client::_autoindex()
 		closedir (dir);
     }
 	else
-        perror ("");
+        exit(-1);
 	return ret;
 }
 
@@ -136,7 +136,6 @@ client::client(int socket, int port)
 		{
 			parse_msg(map[socket]);
 			length = atoi(_header_field["Content-Length"].c_str());
-			std::cout << "Content-Length: " << length << std::endl;
 		}
 		if (_header_field.find("Content-Length") != _header_field.end())
 		{
@@ -157,7 +156,7 @@ client::client(int socket, int port)
 							FD_CLR(socket, &WEBSERVER->getReadSet());
 							shutdown(socket, SHUT_RD);
 							WEBSERVER->getIsSocketEnd()[socket] = true;
-							_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
+							_info = msg_checker().check(_first_line, _header_field, port);
 							_info.status = "413";
 							map[socket].clear();
 							return;
@@ -179,7 +178,8 @@ client::client(int socket, int port)
 		}
 		else if (_header_field.find("Transfer-Encoding") != _header_field.end())
 		{
-			if (map[socket][map[socket].size() - 1] == '0')
+			if (map[socket][map[socket].size() - 3] == '0' && map[socket][map[socket].size() - 2] == '\r' \
+				&& map[socket][map[socket].size() - 1] == '\n')
 			{
 				_header_field["body"] =  chunk_check(map[socket], pos);
 				flag[socket] = true;
@@ -320,7 +320,7 @@ void	client::post_upload()
 		_info.body.clear();
 		return ;
 	}
-	if (_info.body_size > (int)_info.max_body_size)
+	if (_info.body_size > (int)500000)
 	{
 		_info.post_err = true;
 		_info.query = "erro=파일 크기 제한 0.5M!!";
@@ -386,7 +386,7 @@ std::string client::cgi_process()
         dup2(pip[1], 1);
         close(pip[0]);
         close(pip[1]);
-        if (-1 == execve(argv[0], argv, env))
+         if (-1 == execve(argv[0], argv, env))
 			write(2, "execve error\n", 13);
         exit(-1);
     }
