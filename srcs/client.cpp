@@ -237,6 +237,7 @@ std::string client::get_response()
 	}
 	else if (_info.method == "DELETE" && _info.status == "204")
 	{
+		ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
 		ret += std::string("\r\n");
 			return ret;
 	}
@@ -263,6 +264,7 @@ std::string client::get_response()
 	}
 	else if (_info.status == "501")
 	{
+		ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
 		ret += std::string("\r\n");
 		return ret;
 	}
