@@ -223,7 +223,7 @@ std::string client::get_response()
 
 	client::exe_method();
 
-	ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
+	//ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
 	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
 
@@ -277,6 +277,8 @@ std::string client::get_response()
 	else if (_info.is_cgi)
 	{
 		body = cgi_process();
+		if (body == "-1")
+			_info.status = "204";
 		_info.is_cgi = false;
 	}
 	else
@@ -288,6 +290,7 @@ std::string client::get_response()
 		file.close();
 	}
 
+	ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
 	s = body.size();
 	std::stringstream ss;
 	ss << s;
@@ -396,6 +399,14 @@ std::string client::cgi_process()
 
         close(pip[1]);
 		waitpid(pid, &status, 0);
+		if (status = -1)
+		{
+			free(argv[0]);
+			free(argv[1]);
+			for (int i = 0; i < 17; i++)
+				free(env[i]);
+			return "-1";
+		}
         while ((nbytes = read(pip[0], inbuf, 199)) != 0)
         {
             inbuf[nbytes] = 0;
