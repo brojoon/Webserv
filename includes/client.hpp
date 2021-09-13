@@ -58,6 +58,7 @@ class client
 		int 		getSockNum();
 		void		post_upload();
 		bool isReadEnd();
+		void bodySizeError(std::map<int, std::string> &map, int pos, int socket, int port, std::string errnum);
 };
 
 #endif
