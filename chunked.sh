@@ -6,7 +6,7 @@ header+="Host: localhost 20000\n"
 header+="Accept: */*\n"
 header+="Transfer-Encoding: chunked\n"
 thisfile="------\nContent-"
-thisfile2="Disposition: form-data; name=\"file\"; filename=\"id.php\"\nContent-Type: text/php\n\n청크드 실험!!\n------\n"
+thisfile2="Disposition: form-data; name=\"file\"; filename=\"test.php\"\nContent-Type: text/php\n\n청크드 실험!!\n\n------\n"
 thisfilelen=${#thisfile}
 thisfilelen2=${#thisfile2}
 printf -v hexlen '%x' $thisfilelen
@@ -21,6 +21,3 @@ echo -e $hexlen2
 echo -e $thisfile2
 echo -e $end
 sleep 1
-header="POST /upload HTTP/1.1\n"
-header+="Host: localhost 20000\n"
-header+="Accept: */*\n"
