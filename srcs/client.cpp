@@ -50,7 +50,10 @@ std::string client::_autoindex()
 		closedir (dir);
     }
 	else
-        exit(-1);
+    {
+		std::cout << "dir open error" << std::endl;
+	    exit(-1);
+	}
 	return ret;
 }
 
@@ -284,10 +287,17 @@ std::string client::get_response()
 	else
 	{
 		file.open(_abs_path.c_str(), std::ifstream::in);
-		file.is_open();
-		buffer << file.rdbuf();
-		body = buffer.str();
-		file.close();
+		if (file.is_open())
+		{
+			buffer << file.rdbuf();
+			body = buffer.str();
+			file.close();
+		}
+		else
+		{
+			std::cout << "open error" << std::endl;
+			exit(1);
+		}
 	}
 
 	ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
