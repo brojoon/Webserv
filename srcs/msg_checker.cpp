@@ -207,8 +207,8 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	std::string path = ft::ft_strtok(firstline, " ");
 	std::string http = ft::ft_strtok(firstline, "/");
 	info.version = ft::ft_strtok(firstline, "/");
-
-	if (path.size() > 2048)
+	
+ 	if (path.size() > 2048)
 	{
 		info.status = "414";
 		return (info);

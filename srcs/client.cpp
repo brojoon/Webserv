@@ -9,7 +9,6 @@ std::string client::_autoindex()
 	std::string t2;
 	t2.assign(t, t.find_last_of("/"), t.size() - t.find_last_of("/"));
     std::string path = "." + t;
-	std::cout << t2 << std::endl;
 	dir = opendir (path.c_str());
 	char buf[1000];
 	struct stat state;
@@ -73,7 +72,6 @@ void client::parse_msg(std::string &src)
 		value = str;
 		_header_field[key] = value;
 	}
-
 }
 
 std::string client::chunk_check(std::string &src, int pos)
@@ -82,15 +80,14 @@ std::string client::chunk_check(std::string &src, int pos)
 	std::string::size_type end;
 	std::string::size_type len;
 	std::string body;
-
 	while (1)
 	{
 		end = ft::find_first_of(src.c_str(), "\r", start) + 1;
 		len = hexaStringToLong(src.substr(start, end - start -1));
-		if (end == std::string::npos || (src[start] == '0' && start == src.size() - 1))
+		if (end == std::string::npos || ( (start == end - 2) && src[end - 2] == '0' && src[end - 1] == '\r' && src[end] == '\n'))
 			break;
 		start = end + 1;
-		end = ft::find_first_of(src.c_str(), "\r", start) - 1;
+		end = start + len - 1;
 		if (len != (end - start + 1))
 		{
 			chunk_error = true;
@@ -101,7 +98,6 @@ std::string client::chunk_check(std::string &src, int pos)
 	}
 	return body;
 }
-
 
 client::client(int socket, int port):chunk_error(false)
 {
