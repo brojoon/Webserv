@@ -393,13 +393,13 @@ void Webserver::initWebServer()
 					}
 					if (connected != true) //read message
 					{
-						//std::cout << "client socket read : " << i << std::endl;
+						std::cout << "client socket read : " << i << std::endl;
 						port = ntohs(instance->client_sockets[i]);
 						//std::cout << "port : " << port << std::endl;
 						client_list[i].request(i, port);
+						client_list[i].get_response();
 						if (client_list[i].isReadEnd() == true)
 							continue;
-						client_list[i].get_response();
 						std::string t = client_list[i].get_body();
 						if (t.empty())
 							continue;
@@ -409,7 +409,7 @@ void Webserver::initWebServer()
 				}
 				if (FD_ISSET(i, &instance->write_temp) && !FD_ISSET(i, &instance->read_temp)) //write 
 				{
-					//std::cout << "client socket write : " << i << std::endl;
+					std::cout << "client socket write : " << i << std::endl;
 					if (write(i, response_list[i].c_str(), response_list[i].size()) <= 0)
 					{
 						FD_CLR(i, &instance->write_set);

@@ -51,7 +51,7 @@ class client
 		std::string chunk_check(std::string &src, int pos);
 	public:
 		client();
-		void get_response();
+		void		get_response();
 		std::string get_body();
 		void 		exe_method();
 		void 		delet_file();
