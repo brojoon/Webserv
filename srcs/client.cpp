@@ -251,7 +251,7 @@ std::pair<int, std::string> client::get_response()
 		//_info.ret += std::string("Location: .") + _info.url_abs_path + std::string("\r\n");
 		_abs_path = "./var/www/html/index.html";
 	}
-	else if (_info.method == "POST" && _info.status = "201")
+	else if (_info.method == "POST" && _info.status == "201")
 	{
 		if(!_info.post_err)
 		{
@@ -363,7 +363,7 @@ void client::exe_method()
 	}
 	if (_info.method == "DELETE" && _info.status == "204")
 		delet_file();
-	if (_info.method == "POST" && _info.status = "201" && _info.status != "204")
+	if (_info.method == "POST" && _info.status == "201" && _info.status != "204")
 		post_upload();
 	if (chunk_error)
 	{

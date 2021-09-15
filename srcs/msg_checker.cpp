@@ -226,7 +226,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	{
 		info.body =  map["body"];
 		pase_body_for_post(map);
-		if (info.status != 201)
+		if (info.status != "201")
 		{
 			info.body.clear();
 			info.body = map["body"];
