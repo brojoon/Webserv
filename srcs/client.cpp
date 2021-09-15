@@ -309,7 +309,7 @@ std::pair<int, std::string> client::get_response()
 		}
 		else
 		{
-			int te = open(_abs_path.c_str(), O_RDONLY);
+			int te = open(_abs_path.c_str(), O_RDWR | O_CREAT| S_IRWXU);
 			return_value.first = te;
 		}
 		/*
@@ -392,8 +392,8 @@ void	client::post_upload()
 	{
 		_abs_path = "." + _info.url_abs_path;
 		std::cout << _abs_path << std::endl;
-		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT);
-		std::cout << "395줄에서 체크해봅니다" << f << std::endl;
+		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT | S_IRWXU);
+		std::cout << "396줄에서 체크해봅니다" << f << std::endl;
 		return_value.first = f;
 		return ;//바로 리턴함
 		std::ofstream file(_abs_path.c_str());
@@ -467,7 +467,13 @@ int client::cgi_process()
 		}
 		else
 		{
-			 free(argv[0]);
+			char buf[10000];
+			int h = read(pip[0], buf, 9999);
+			buf[h] = 0;
+			std::cout << buf << std::endl;
+			while (1)
+			{}
+			free(argv[0]);
 			free(argv[1]);
 			for (int i = 0; i < 17; i++)
 				free(env[i]);

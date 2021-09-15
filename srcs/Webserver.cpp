@@ -411,24 +411,24 @@ void Webserver::initWebServer()
 					{
 						std::cout << "client socket read : " << i << std::endl;
 						port = ntohs(instance->client_sockets[i]);
-						std::cout << "is_files: " << is_files(i, files) << std::endl;
+						//std::cout << "is_files: " << is_files(i, files) << std::endl;
 						if (is_files(i, files) == false)
 						{
-							std::cout << "socket을 읽고 있습니다" << std::endl;
+							//std::cout << "socket을 읽고 있습니다" << std::endl;
 							client obj(i, port);
 							if (obj._flag[i] == false)
 								continue;
 							if (obj.isReadEnd() == true)
 								continue;
-							std::cout << "socket을 다 읽었습니다" << std::endl;
+							//std::cout << "socket을 다 읽었습니다" << std::endl;
 							std::pair<int, std::string> t = obj.get_response();
-							std::cout << "get response" << std::endl;
+							//std::cout << "get response" << std::endl;
 							sock_file_pair.push_back(std::pair<int, int>(i, t.first));
 							files.push_back(t.first);
 							sock_msg[i] = t.second;//(가)
 							if (t.first == i)
 							{
-								std::cout << "t_first == i" << std::endl;
+								//std::cout << "t_first == i" << std::endl;
 								response_list[i] = t.second;//(나)
 								FD_SET(i, &instance->write_set);//socket_write 갈 예정
 								if (fd_max < i)
@@ -438,7 +438,7 @@ void Webserver::initWebServer()
 							{
 								if (obj.getMethod() == "POST")
 								{
-									std::cout << "POST" << std::endl;
+									//std::cout << "POST" << std::endl;
 									if (obj.cgi_flag)
 									{
 										FD_SET(t.first, &instance->read_set);//나중에 close필요
@@ -447,13 +447,13 @@ void Webserver::initWebServer()
 									}
 									else
 									{	
-										std::cout << "cgi는 아  님    " << t.first <<  std::endl;
+										//std::cout << "cgi는 아  님    " << t.first <<  std::endl;
 										FD_SET(t.first, &instance->write_set);//나중에 close필요
 										int position = sock_msg[i].find_first_of("\n");
 										position++;
 										int pp = ft::ft_contain(sock_msg[i], "\r\n\r\n");
 										int s = sock_msg[i].size() - pp;
-										std::cout << s << std::endl;
+										//std::cout << s << std::endl;
 										std::stringstream ss;
 										ss << s;
 										sock_msg[i].insert(position, std::string("content-length: ")+ ss.str() + std::string("\r\n"));
@@ -467,12 +467,12 @@ void Webserver::initWebServer()
 										FD_SET(i, &instance->write_set);//이건 close해줄 필요가 없음
 										if (fd_max < i)
 											fd_max = i + 1;
-										std::cout << "써야할 파일을 등록 완료했습니다" << std::endl;
+										//std::cout << "써야할 파일을 등록 완료했습니다" << std::endl;
 									}
 								}
 								else
 								{
-									std::cout << "이 파일을 읽어야합니다" << t.first << std::endl;
+									//std::cout << "이 파일을 읽어야합니다" << t.first << std::endl;
 									FD_SET(t.first, &instance->read_set);
 									if (fd_max < t.first)
 										fd_max = t.first + 1;
@@ -493,34 +493,47 @@ void Webserver::initWebServer()
 								if (iter->second == i)
 									socket = iter->first; 
 							}
-							if (socket == -1)
-								std::cout << "찾지 못함" << std::endl;
+							//if (socket == -1)
+								//std::cout << "찾지 못함" << std::endl;
 							char b[2560];
 							int r_size = read(i, b, 2560);
-							std::cout << file <<"번 file을 읽고 있습니다" << std::endl;
+							//std::cout << file <<"번 file을 읽고 있습니다" << std::endl;
 							for (int idx = 0; idx < r_size; idx++)
 								sock_body[socket].push_back(b[idx]);
+							
 							if (r_size != 2560)
 							{
-								std::cout << file <<"번 file을 읽기가 끝났습니다" << std::endl;
+								//std::cout << file <<"번 file을 읽기가 끝났습니다" << std::endl;
+								//std::cout << "size: " << sock_body[socket].size() << std::endl;
+								//std::cout << sock_body[socket] << std::endl;
 								FD_CLR(file, &instance->read_set);
 								int ppp = ft::ft_contain(sock_body[socket], "\r\n\r\n");
+								//int powerd = ft::ft_contain(sock_body[socket], "X-Powerded-By");
 								if (ppp != -1)
 									sock_body[socket] = sock_body[socket].substr(ppp, sock_body[socket].size() - ppp);
+								
 								int s = sock_body[socket].size();
 								std::stringstream ss;
 								ss << s;
+								//std::cout << "ss : "<< ss <<std::endl;
 								sock_msg[socket] += std::string("content-length: ")+ ss.str() + std::string("\r\n");
 								sock_msg[socket] += std::string("\r\n");
+								int as = open("test.txt", O_RDWR | O_CREAT | O_TRUNC);
+								write(as, sock_msg[socket].c_str(), sock_msg[socket].size());
+								write(as, "|||||\n", 6);
+								write(as, sock_body[socket].c_str(), sock_body[socket].size());
+								//std::cout << "size: " << sock_body[socket].size() << std::endl;
+								close(as);
 								response_list[socket] = sock_msg[socket] + sock_body[socket];//(나)
 								sock_body[socket].clear();
 								sock_msg[socket].clear();
 								FD_SET(socket, &instance->write_set);//socket_write 갈 예정
 								if (fd_max < socket)
 									fd_max = socket + 1;
+								//std::cout << "write set에 등록 완료" << std::endl;
 							}
-							else
-								std::cout << "nothing can do" << std::endl;
+							//else
+								//std::cout << "nothing can do" << std::endl;
 							/*
 							FILE *fp = fopen("hello.txt", "r");    // hello.txt 파일을 읽기 모드(r)로 열기.
 																// 파일 포인터를 반환
@@ -538,7 +551,7 @@ void Webserver::initWebServer()
 				{
 					if (is_files(i, files) == false)
 					{
-						std::cout << "client socket write : " << i << std::endl;
+						//std::cout << "client socket write : " << i << std::endl;
 						
 						if (write(i, response_list[i].c_str(), response_list[i].size()) <= 0)
 						{
@@ -562,6 +575,7 @@ void Webserver::initWebServer()
 					}
 					else//files
 					{
+						//std::cout << "file fd write : " << i << std::endl;
 						int file = i;
 						int socket = -1;
 						for (std::vector<std::pair<int, int> >::iterator iter = sock_file_pair.begin(); iter != sock_file_pair.end(); iter++)
@@ -569,9 +583,9 @@ void Webserver::initWebServer()
 							if (iter->second == i)
 								socket = iter->first; 
 						}
-						if (socket == -1)
-							std::cout << "찾지 못함" << std::endl;
-						std::cout << "file 쓰기" << std::endl;
+						//if (socket == -1)
+							//std::cout << "찾지 못함" << std::endl;
+						//std::cout << "file 쓰기" << std::endl;
 						int p = ft::ft_contain(sock_msg[socket], "\r\n\r\n");
 						std::string last = sock_msg[socket];
 
@@ -581,7 +595,7 @@ void Webserver::initWebServer()
 						}
 						write(file, last.c_str(), (last.size()));
 						FD_CLR(file, &instance->write_set);
-						std::cout << "file 쓰기가 끝났습니다" << std::endl;
+						//std::cout << "file 쓰기가 끝났습니다" << std::endl;
 
 					}
 				}
