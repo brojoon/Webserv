@@ -115,7 +115,7 @@ client::client(int socket, int port):chunk_error(false)
 		map[socket] += buf[i];
 	if (ret <= 0)
 	{
-		std::cout << "disconnected: " << socket << std::endl;
+		//std::cout << "disconnected: " << socket << std::endl;
 		FD_CLR(socket, &WEBSERVER->getReadSet());
 		FD_CLR(socket, &WEBSERVER->getWriteSet());
 		close(socket);
@@ -123,12 +123,12 @@ client::client(int socket, int port):chunk_error(false)
 		for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
 		it != WEBSERVER->getClientSockets().end(); it++)
 		{
-			std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
+			//std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
 		}
 		is_read_end = true;
 		return;
 	}
-	std::cout << "현재 map size()" << map[socket].size() << std::endl;
+	//std::cout << "현재 map size()" << map[socket].size() << std::endl;
 	buf[ret] = 0;
 	if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
 	{
@@ -208,47 +208,44 @@ client::client(int socket, int port):chunk_error(false)
 }
 
 
-std::string client::get_response()
+void client::get_response()
 {
 	if (!flag[socket_num])
-		return std::string();
-	std::ifstream		file;
-	std::stringstream	buffer;
-	std::string body = "";
-	unsigned int s;
-	std::string ret = "";
+		return ;
+
 	std::string _abs_path = "";
 
 	client::exe_method();
 
 	//ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
-	ret += std::string("Server: 42Webserv/1.0\r\n");
-	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
+	_info.ret += std::string("Server: 42Webserv/1.0\r\n");
+	_info.ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
 
 	if (_info.status == "400" || _info.status == "404" || _info.status == "403" || _info.status == "405" || _info.status == "414" || _info.status == "413")
 	{
-		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
+		_info.ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
 		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
-		std::cout << "_abs_path : " << _abs_path << std::endl;
 		_info.is_cgi = false;
 	}
 	else if (_info.method == "DELETE" && _info.status == "204")
 	{
-		ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
-		ret += std::string("\r\n");
-			return ret;
+		_info.ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
+		_info.ret += std::string("\r\n");
+		return ;
 	}
 	else if (_info.status == "301")
 	{
-		ret += std::string("Location: ") + _info.url_abs_path + std::string("\r\n");
+		_info.ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
+		_info.ret += std::string("Location: .") + _info.url_abs_path + std::string("\r\n");
+		_abs_path = "./var/www/html/index.html";
 	}
-	else if (_info.method == "POST" && _info.is_file)
+	else if (_info.method == "POST" && _info.status == "201")
 	{
 		if(!_info.post_err)
 		{
 			if (!_info.is_cgi)
 				_abs_path = "." + _info.url_abs_path;
-			ret += std::string("Location: ./upload/") + _info.body_filename + std::string("\r\n");
+			_info.ret += std::string("Location: ./upload/") + _info.body_filename + std::string("\r\n");
 		}
 		else
 		{
@@ -256,21 +253,32 @@ std::string client::get_response()
 			_info.url_abs_path = "/var/www/html/upload/default.php";
 			_info.extention = ".php";
 			_info.is_cgi = true;
-			ret += std::string("Location: ./upload/default.php") + std::string("\r\n");
+			_info.ret += std::string("Location: ./upload/default.php") + std::string("\r\n");
 		}
 	}
 	else if (_info.status == "501")
 	{
-		ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
-		ret += std::string("\r\n");
-		return ret;
+		_info.ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
+		_abs_path = "./var/www/html/errors/default.html";
+		_info.is_cgi = false;
 	}
 	else if (!_info.check_autoindex)
 	{
-		ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
+		_info.ret += std::string("Content-type: ") + ft::mime().get_mime_type(_info.extention) + std::string("; charset=UTF-8\r\n");// charset=UTF-8 이 부분 없으면 안됨(웹페이지가 불안정하게 표시될 수 있음)
 		_abs_path += "." + _info.url_abs_path;
 	}
 
+	_info.ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
+	_info._abs_path += _abs_path;
+	return ;
+}
+
+std::string client::get_body()
+{
+	std::ifstream		file;
+	std::stringstream	buffer;
+	std::string body = "";
+	unsigned int s;
 	//////////파일 읽기/////////////
 	if (_info.check_autoindex)
 		body = _autoindex();
@@ -281,9 +289,9 @@ std::string client::get_response()
 			_info.status = "204";
 		_info.is_cgi = false;
 	}
-	else
+	else 
 	{
-		file.open(_abs_path.c_str(), std::ifstream::in);
+		file.open(_info._abs_path.c_str(), std::ifstream::in);
 		if (file.is_open())
 		{
 			buffer << file.rdbuf();
@@ -296,16 +304,14 @@ std::string client::get_response()
 			exit(1);
 		}
 	}
-
-	ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
 	s = body.size();
 	std::stringstream ss;
 	ss << s;
-	ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
-	ret += std::string("\r\n");
-	ret += body;
+	_info.ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
+	_info.ret += std::string("\r\n");
+	_info.ret += body;
 
-	return ret;
+	return _info.ret;
 }
 
 void client::exe_method()
@@ -317,7 +323,7 @@ void client::exe_method()
 	}
 	if (_info.method == "DELETE" && _info.status == "204")
 		delet_file();
-	if (_info.method == "POST" && _info.is_file && _info.status != "204")
+	if (_info.method == "POST" && _info.status == "201" && _info.status != "204")
 		post_upload();
 	if (chunk_error)
 	{

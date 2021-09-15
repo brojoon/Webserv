@@ -52,7 +52,8 @@ class client
 	public:
 		client(std::string request_msg);
 		client(int socket, int port);
-		std::string get_response();
+		void get_response();
+		std::string get_body();
 		void 		exe_method();
 		void 		delet_file();
 		int 		getSockNum();

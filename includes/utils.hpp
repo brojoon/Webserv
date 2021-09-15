@@ -8,6 +8,9 @@
 #include <sys/stat.h>
 #include <ctime>
 #include <cmath>
+#include "../includes/util_env.hpp"
+#include "../includes/util_mime.hpp"
+#include "../includes/util_err.hpp"
 
 namespace ft
 {
@@ -23,47 +26,5 @@ namespace ft
 	long hexaStringToLong(const std::string &str);
 	std::string longToHexaString(long src);
 	std::string::size_type find_first_of(const char *src, const char *find_in_str, std::string::size_type pos);
-	
-	class env
-	{
-		private:
-			std::map<int, std::string> _vec_env;
-			char *_env[18];
-
-		public:
-			env(std::string length,
-				std::string extention,
-				std::string url,
-				std::string query,
-				std::string method,
-				std::string host,
-				std::string port,
-				std::string version);
-			~env();
-			char **get_env();		
-	};
-
-	class mime
-	{
-		private:
-			std::map<std::string, std::string> _mime;
-
-		public:
-			mime();
-			~mime();
-			std::string get_mime_type(std::string extension);
-	};
-
-	class err
-	{
-		private:
-			std::map<std::string, std::string> _err;
-
-		public:
-			err();
-			~err();
-			std::string get_err(std::string status);
-	};
 }
-
 #endif
