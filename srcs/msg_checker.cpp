@@ -169,7 +169,7 @@ void msg_checker::pase_body_for_post(std::map<std::string, std::string> &map)
     }
     if ( map["Content-Disposition"] != "")
     {
-        info.is_file = true;
+        info.status = "200";
         info.body_type = map["Content-Type"];
         std::string  Disposition = map["Content-Disposition"];
         ft::ft_strtok(Disposition, "=");
@@ -196,7 +196,6 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	info.is_cgi = false;
 	info.same_location = false;
 	info.autoindex = false;
-	info.is_file = false;
 	info.post_err = false;
 	info.check_autoindex = false;
 	info.location_uri = "";
@@ -208,11 +207,6 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	std::string http = ft::ft_strtok(firstline, "/");
 	info.version = ft::ft_strtok(firstline, "/");
 	
- 	if (path.size() > 2048)
-	{
-		info.status = "414";
-		return (info);
-	}
 
 	info.url_abs_path = ft::ft_strtok(path, "?");
 	info.query = path;
@@ -221,22 +215,18 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 	ft::split(map["Accept-Encoding"], " ,", info.accept_Encoding); // 헤더에 따라 수용 가능한 응답을 보낼 수 없는 경우 서버는 [406(Not Acceptable)] 상태 코드와 함께 오류 응답
 	info.user_Agent = map["User-Agent"]; // 여러 제품 토큰과 사용자 에이전트의 중요한 부분을 구성하는 에이전트 및 하위 제품을 식별하는 설명
 
-	if (ft::isknown(info.method) == false)
-	{
+ 	if (info.url_abs_path.size() > 128)
+		info.status = "414";
+	else if (ft::isknown(info.method) == false)
 		info.status = "501";
-		return (info);
-	}
 	else if (ft::isMethods(info.method) == false)
-	{
 		info.status = "405";
-		return (info);
-	}
 
 	if (info.method == "POST")
 	{
 		info.body =  map["body"];
 		pase_body_for_post(map);
-		if (!info.is_file)
+		if (info.status != 201)
 		{
 			info.body.clear();
 			info.body = map["body"];
@@ -259,7 +249,8 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 				{
 					info.error_pages = server_iter->second.getErrorPages();
 					info.max_body_size = server_iter->second.getClientMaxBodySize();
-					tem = find_url(server_iter->second);
+					if (info.status != "501" && info.status != "405" && info.status != "414")
+						tem = find_url(server_iter->second);
 					info.url_abs_path.clear();
 					info.url_abs_path = tem;
 					break ;
@@ -282,7 +273,8 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 				{
 					info.error_pages = server_iter->second.getErrorPages();
 					info.max_body_size = server_iter->second.getClientMaxBodySize();
-					tem = find_url(server_iter->second);
+					if (info.status != "501" && info.status != "405" && info.status != "414")
+						tem = find_url(server_iter->second);
 					info.url_abs_path.clear();
 					info.url_abs_path = tem;
 					break ;
