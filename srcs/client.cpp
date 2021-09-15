@@ -144,12 +144,12 @@ client::client(int socket, int port):chunk_error(false)
 				&& map[socket][map[socket].size() - 1] == '\n')
 			{
 				_header_field["body"] =  chunk_check(map[socket], pos);
-				flag[socket] = true;
+				_flag[socket] = true;
 				map[socket].clear();
 			}
 			else
 			{
-				flag[socket] = false;
+				_flag[socket] = false;
 				return ;
 			}
 		}
@@ -179,22 +179,22 @@ client::client(int socket, int port):chunk_error(false)
 			}
 			if ((unsigned long)length > (map[socket].size() - pos))
 			{
-				flag[socket] = false;
+				_flag[socket] = false;
 				return;
 			}
 			else
 			{
 				_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
 				map[socket].clear();
-				flag[socket] = true;
+				_flag[socket] = true;
 			}
 		}
 		else
 		{
-			flag[socket] = true;
+			_flag[socket] = true;
 			map[socket].clear();
 		}
-		if (flag[socket] == true)
+		if (_flag[socket] == true)
 		{
 			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
 			map[socket].clear();
@@ -202,25 +202,29 @@ client::client(int socket, int port):chunk_error(false)
 	}
 	else // 더 읽어들여야함
 	{
-		flag[socket] = false;
+		_flag[socket] = false;
 		return ;
 	}
 }
 
 
-std::string client::get_response()
+std::pair<int, std::string> client::get_response()
 {
-	if (!flag[socket_num])
-		return std::string();
+	
 	std::ifstream		file;
 	std::stringstream	buffer;
 	std::string body = "";
 	unsigned int s;
 	std::string ret = "";
-	std::string _abs_path = "";
+	cgi_flag = false;
 
+	return_value.first = 0;
 	client::exe_method();
-
+	int post_flag = 0;
+	if (return_value.first != 0)
+	{
+		post_flag = 1;
+	}
 	//ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
 	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
@@ -236,7 +240,8 @@ std::string client::get_response()
 	{
 		ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
 		ret += std::string("\r\n");
-			return ret;
+		return std::pair<int, std::string>(socket_num, ret);
+		//return ret;
 	}
 	else if (_info.status == "301")
 	{
@@ -263,7 +268,8 @@ std::string client::get_response()
 	{
 		ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
 		ret += std::string("\r\n");
-		return ret;
+		return std::pair<int, std::string>(socket_num, ret);
+		//return ret;
 	}
 	else if (!_info.check_autoindex)
 	{
@@ -273,16 +279,40 @@ std::string client::get_response()
 
 	//////////파일 읽기/////////////
 	if (_info.check_autoindex)
+	{
+		return_value.first = socket_num;
 		body = _autoindex();
+	}
 	else if (_info.is_cgi)
 	{
+		cgi_flag = true;
+		int r = cgi_process();
+		if (r == -1)
+			exit(1);
+		else
+			return_value.first = r;
+		/*
 		body = cgi_process();
+		body = 
 		if (body == "-1")
 			_info.status = "204";
 		_info.is_cgi = false;
+		*/
 	}
 	else
 	{
+		if (post_flag == 1)
+		{
+			std::cout << "post flag" << std::endl;
+			ret += "\r\n";
+			ret += _info.body;
+		}
+		else
+		{
+			int te = open(_abs_path.c_str(), O_RDONLY);
+			return_value.first = te;
+		}
+		/*
 		file.open(_abs_path.c_str(), std::ifstream::in);
 		if (file.is_open())
 		{
@@ -295,19 +325,29 @@ std::string client::get_response()
 			std::cout << "open error" << std::endl;
 			exit(1);
 		}
+		*/
 	}
 
 	ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
-	s = body.size();
-	std::stringstream ss;
-	ss << s;
-	ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
-	ret += std::string("\r\n");
-	ret += body;
-
-	return ret;
+	
+	if(return_value.first == socket_num)
+	{
+		s = body.size();
+		std::stringstream ss;
+		ss << s;
+		ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
+		ret += std::string("\r\n");
+		ret += body;
+	}
+	return_value.second = ret;
+	return return_value;
+	//return ret;
 }
 
+std::string client::getMethod()
+{
+	return _info.method;
+}
 void client::exe_method()
 {
 	if (_info.autoindex && _info.status == "404" && _info.same_location)
@@ -350,7 +390,12 @@ void	client::post_upload()
 	}
 	if (_info.post_err == false)
 	{
-		std::string _abs_path = "." + _info.url_abs_path;
+		_abs_path = "." + _info.url_abs_path;
+		std::cout << _abs_path << std::endl;
+		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT);
+		std::cout << "395줄에서 체크해봅니다" << f << std::endl;
+		return_value.first = f;
+		return ;//바로 리턴함
 		std::ofstream file(_abs_path.c_str());
 		if (file.is_open())
 			file << _info.body;
@@ -373,7 +418,7 @@ void client::delet_file()
 		_info.status = "403";
 }
 
-std::string client::cgi_process()
+int client::cgi_process()
 {
     std::string ret;
     char    *argv[3];
@@ -417,7 +462,15 @@ std::string client::cgi_process()
 			free(argv[1]);
 			for (int i = 0; i < 17; i++)
 				free(env[i]);
-			return "-1";
+			return -1;
+		}
+		else
+		{
+			 free(argv[0]);
+			free(argv[1]);
+			for (int i = 0; i < 17; i++)
+				free(env[i]);
+			return pip[0];
 		}
         while ((nbytes = read(pip[0], inbuf, 199)) != 0)
         {
@@ -447,7 +500,7 @@ std::string client::cgi_process()
         }
         idx++;
     }
-    return ret;
+    return -1;
 }
 
 msg_checker::msg_checker()
@@ -471,7 +524,7 @@ void client::bodySizeError(std::map<int, std::string> &map, int pos, int socket,
 {
 	_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
 	std::cout << "body size : " << _header_field["body"].size() << std::endl;
-	flag[socket] = true;
+	_flag[socket] = true;
 	FD_CLR(socket, &WEBSERVER->getReadSet());
 	shutdown(socket, SHUT_RD);
 	WEBSERVER->getIsSocketEnd()[socket] = true;

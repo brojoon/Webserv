@@ -44,21 +44,26 @@ class client
 		//msg_checker _obj;
 		//msg_chekcer 객체가 점검을 끝내고 반환하는 값을 info에 저장
 		checker_return_type _info;
-		std::string cgi_process();
+		int cgi_process();
 		std::string _autoindex();
-		std::map<int, bool> flag;
+		std::pair<int, std::string> return_value;
 		bool is_read_end;
 		std::string chunk_check(std::string &src, int pos);
 	public:
 		client(std::string request_msg);
 		client(int socket, int port);
-		std::string get_response();
+		std::pair<int, std::string> get_response();
 		void 		exe_method();
 		void 		delet_file();
 		int 		getSockNum();
 		void		post_upload();
+		std::map<int, bool> _flag;
+		std::map<int, std::string> _buf;
+		std::string _abs_path;
+		bool cgi_flag;
 		bool isReadEnd();
 		void bodySizeError(std::map<int, std::string> &map, int pos, int socket, int port, std::string errnum);
+		std::string getMethod();
 };
 
 #endif

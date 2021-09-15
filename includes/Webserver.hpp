@@ -64,6 +64,7 @@ class Webserver
 		bool parsingConfig(const char *config_file);
 		void error_handling(const char *message);
 		void initWebServer();
+		std::map<int, std::string> write_map;
 };
 
 
