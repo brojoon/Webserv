@@ -78,6 +78,11 @@ fd_set &Webserver::getWriteSet()
 	return this->write_set;
 }
 
+std::map<int, client> &Webserver::getClientList()
+{
+	return this->client_list;
+}
+
 bool Webserver::parsingConfig(const char *config_file)
 {
 	std::ifstream ifs;
@@ -391,11 +396,11 @@ void Webserver::initWebServer()
 						//std::cout << "client socket read : " << i << std::endl;
 						port = ntohs(instance->client_sockets[i]);
 						//std::cout << "port : " << port << std::endl;
-						client obj(i, port);
-						if (obj.isReadEnd() == true)
+						client_list[i].request(i, port);
+						if (client_list[i].isReadEnd() == true)
 							continue;
-						obj.get_response();
-						std::string t = obj.get_body();
+						client_list[i].get_response();
+						std::string t = client_list[i].get_body();
 						if (t.empty())
 							continue;
 						response_list[i] = t;

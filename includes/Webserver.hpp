@@ -27,6 +27,7 @@
 #include <cmath>
 #include <sys/select.h>
 
+
 typedef struct ServerFD
 {
 	int socket;
@@ -35,6 +36,7 @@ typedef struct ServerFD
 }ServerFD;
 
 class Server;
+class client;
 
 class Webserver
 {
@@ -46,6 +48,7 @@ class Webserver
 		std::map<int, unsigned short> client_sockets; 
 		std::map<int, ServerFD> server_sockets; 
 		std::map<int, std::string> response_list;
+		std::map<int, client> client_list;
 		std::map<int, bool> is_socket_end;
 		fd_set read_set, read_temp, write_set, write_temp;
 	public:
@@ -57,6 +60,7 @@ class Webserver
 		std::map<int, unsigned short> &getClientSockets();
 		std::map<int, ServerFD> &getServerSockets();
 		std::map<int, bool> &getIsSocketEnd();
+		std::map<int, client> &getClientList();
 		fd_set &getReadSet();
 		fd_set &getWriteSet();
 		

@@ -50,16 +50,16 @@ class client
 		bool is_read_end;
 		std::string chunk_check(std::string &src, int pos);
 	public:
-		client(std::string request_msg);
-		client(int socket, int port);
+		client();
 		void get_response();
 		std::string get_body();
 		void 		exe_method();
 		void 		delet_file();
 		int 		getSockNum();
 		void		post_upload();
-		bool isReadEnd();
-		void bodySizeError(std::map<int, std::string> &map, int pos, int socket, int port, std::string errnum);
+		void		request(int socket, int port);
+		bool		isReadEnd();
+		void		bodySizeError(std::map<int, std::string> &map, int pos, int socket, int port, std::string errnum);
 };
 
 #endif

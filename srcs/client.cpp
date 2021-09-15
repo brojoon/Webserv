@@ -1,6 +1,12 @@
 #include "../includes/client.hpp"
 #include "../includes/Webserver.hpp"
 
+
+client::client() : chunk_error(false)
+{
+
+}
+
 std::string client::_autoindex()
 {
 	DIR *dir;
@@ -99,7 +105,7 @@ std::string client::chunk_check(std::string &src, int pos)
 	return body;
 }
 
-client::client(int socket, int port):chunk_error(false)
+void client::request(int socket, int port)
 {
 	int ret, bufsize = 4096;
 	char buf[bufsize];

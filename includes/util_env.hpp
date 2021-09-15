@@ -2,7 +2,7 @@
 #define UTIL_ENV_HPP
 
 #include <map>
-#include <string>
+#include <string.h>
 #include <iostream>
 #include "../includes/util_mime.hpp"
 
