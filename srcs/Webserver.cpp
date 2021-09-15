@@ -428,6 +428,7 @@ void Webserver::initWebServer()
 						else
 							FD_CLR(i, &instance->write_set);
 					}
+					client_list.erase(i);
 					response_list[i].clear();
 				}
 			}
