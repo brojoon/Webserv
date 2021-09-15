@@ -43,7 +43,7 @@ class client
 		//msg_checker 객체
 		//msg_checker _obj;
 		//msg_chekcer 객체가 점검을 끝내고 반환하는 값을 info에 저장
-		checker_return_type _info;
+		
 		int cgi_process();
 		std::string _autoindex();
 		std::pair<int, std::string> return_value;
@@ -61,6 +61,7 @@ class client
 		std::map<int, std::string> _buf;
 		std::string _abs_path;
 		bool cgi_flag;
+		checker_return_type _info;
 		bool isReadEnd();
 		void bodySizeError(std::map<int, std::string> &map, int pos, int socket, int port, std::string errnum);
 		std::string getMethod();

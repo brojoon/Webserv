@@ -420,7 +420,7 @@ void Webserver::initWebServer()
 								continue;
 							if (obj.isReadEnd() == true)
 								continue;
-							//std::cout << "socket을 다 읽었습니다" << std::endl;
+							std::cout << "socket을 다 읽었습니다" << std::endl;
 							std::pair<int, std::string> t = obj.get_response();
 							//std::cout << "get response" << std::endl;
 							sock_file_pair.push_back(std::pair<int, int>(i, t.first));
@@ -445,8 +445,13 @@ void Webserver::initWebServer()
 										if (fd_max < t.first)
 											fd_max = t.first + 1;
 									}
-									else
-									{	
+									else if (obj._info.post_err == false)
+									{
+										/*if (obj._info.post_err == true)
+										{
+											FD_SET(i, &instance->write_set);//에러 메시지를 보낼것
+											response_list[i] = t.second;//(나)
+										}*/
 										//std::cout << "cgi는 아  님    " << t.first <<  std::endl;
 										FD_SET(t.first, &instance->write_set);//나중에 close필요
 										int position = sock_msg[i].find_first_of("\n");
@@ -469,10 +474,18 @@ void Webserver::initWebServer()
 											fd_max = i + 1;
 										//std::cout << "써야할 파일을 등록 완료했습니다" << std::endl;
 									}
+									else
+									{
+										FD_SET(t.first, &instance->read_set);
+										if (fd_max < t.first)
+											fd_max = t.first + 1;
+									}
 								}
 								else
 								{
 									//std::cout << "이 파일을 읽어야합니다" << t.first << std::endl;
+									if (obj._info.post_err)
+										sock_msg[i] += "\r\n";
 									FD_SET(t.first, &instance->read_set);
 									if (fd_max < t.first)
 										fd_max = t.first + 1;
@@ -507,6 +520,7 @@ void Webserver::initWebServer()
 								//std::cout << "size: " << sock_body[socket].size() << std::endl;
 								//std::cout << sock_body[socket] << std::endl;
 								FD_CLR(file, &instance->read_set);
+								close(file);
 								int ppp = ft::ft_contain(sock_body[socket], "\r\n\r\n");
 								//int powerd = ft::ft_contain(sock_body[socket], "X-Powerded-By");
 								if (ppp != -1)
@@ -562,10 +576,12 @@ void Webserver::initWebServer()
 						}
 						else
 						{
+							std::cout << "모두 보냄" <<std::endl;
+							std::cout << response_list[i] << std::endl;
 							if (instance->is_socket_end[i] == true)
 							{
 								FD_CLR(i, &instance->write_set);
-								close(i);
+								//close(i);
 								instance->client_sockets.erase(i);
 							}
 							else
@@ -595,6 +611,7 @@ void Webserver::initWebServer()
 						}
 						write(file, last.c_str(), (last.size()));
 						FD_CLR(file, &instance->write_set);
+						close(file);
 						//std::cout << "file 쓰기가 끝났습니다" << std::endl;
 
 					}
