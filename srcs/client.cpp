@@ -248,7 +248,7 @@ std::pair<int, std::string> client::get_response()
 	}
 	else if (_info.status == "301")
 	{
-		//_info.ret += std::string("Location: .") + _info.url_abs_path + std::string("\r\n");
+		ret += std::string("Location: .") + _info.url_abs_path + std::string("\r\n");
 		_abs_path = "./var/www/html/index.html";
 	}
 	else if (_info.method == "POST" && _info.status == "201")
