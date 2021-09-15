@@ -484,7 +484,7 @@ void Webserver::initWebServer()
 							//response_list[i] = t;
 							//FD_SET(i, &instance->write_set);
 						}
-						else
+						else//file fd(read)
 						{
 							int file = i;
 							int socket = -1;
@@ -504,6 +504,9 @@ void Webserver::initWebServer()
 							{
 								std::cout << file <<"번 file을 읽기가 끝났습니다" << std::endl;
 								FD_CLR(file, &instance->read_set);
+								int ppp = ft::ft_contain(sock_body[socket], "\r\n\r\n");
+								if (ppp != -1)
+									sock_body[socket] = sock_body[socket].substr(ppp, sock_body[socket].size() - ppp);
 								int s = sock_body[socket].size();
 								std::stringstream ss;
 								ss << s;

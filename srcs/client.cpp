@@ -425,6 +425,7 @@ int client::cgi_process()
     int     pip[2];
     argv[0] = strdup(_info.cgi_path.c_str());
     argv[1] = strdup(("." + _info.url_abs_path).c_str());
+	std::cout << "file path" << argv[1] << std::endl;
 	argv[2] = NULL;
 	std::stringstream ss;
 	ss << _info.port;
