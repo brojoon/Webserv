@@ -161,8 +161,10 @@ void client::request(int socket, int port)
 		}
 		else if (_header_field.find("Content-Length") != _header_field.end())
 		{
+			length = atoi(_header_field["Content-Length"].c_str());
 			if (length < (int)(map[socket].size() - pos))
 			{
+				std::cout << "length: " << length << "map[socket].size() - pos: " << map[socket].size() - pos;
 				bodySizeError(map, pos, socket, port, "400");
 				return;
 			}
@@ -214,12 +216,14 @@ void client::request(int socket, int port)
 }
 
 
-void client::get_response()
+std::string client::get_response()
 {
 	if (!flag[socket_num])
-		return ;
+		return std::string();
 
 	std::string _abs_path = "";
+
+	std::cout << "bbbb" << _info.status <<  "    " << _info.method << "    " << _info.url_abs_path << std::endl;
 
 	client::exe_method();
 
@@ -237,7 +241,7 @@ void client::get_response()
 	{
 		_info.ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
 		_info.ret += std::string("\r\n");
-		return ;
+		return _info.ret;
 	}
 	else if (_info.status == "301")
 	{
@@ -276,7 +280,7 @@ void client::get_response()
 
 	_info.ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
 	_info._abs_path += _abs_path;
-	return ;
+	return _info.ret;
 }
 
 std::string client::get_body()
@@ -297,6 +301,7 @@ std::string client::get_body()
 	}
 	else 
 	{
+		std::cout << "aaaaaa" << _info._abs_path.c_str() << std::endl;
 		file.open(_info._abs_path.c_str(), std::ifstream::in);
 		if (file.is_open())
 		{
@@ -489,6 +494,7 @@ void client::bodySizeError(std::map<int, std::string> &map, int pos, int socket,
 	WEBSERVER->getIsSocketEnd()[socket] = true;
 	_info = msg_checker().check(_first_line, _header_field, port);
 	_info.status = errnum;
+	std::cout << "여기인가?" << std::endl;
 	map[socket].clear();
 	return;
 }

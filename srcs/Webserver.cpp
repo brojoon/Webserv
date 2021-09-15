@@ -397,16 +397,17 @@ void Webserver::initWebServer()
 						port = ntohs(instance->client_sockets[i]);
 						//std::cout << "port : " << port << std::endl;
 						client_list[i].request(i, port);
-						client_list[i].get_response();
 						if (client_list[i].isReadEnd() == true)
 							continue;
-						std::string t = client_list[i].get_body();
+						std::string t = client_list[i].get_response();
 						if (t.empty())
 							continue;
-						response_list[i] = t;
+						std::string t1 = client_list[i].get_body();
+						response_list[i] = t1;
 						FD_SET(i, &instance->write_set);
 					}
 				}
+				
 				if (FD_ISSET(i, &instance->write_temp) && !FD_ISSET(i, &instance->read_temp)) //write 
 				{
 					std::cout << "client socket write : " << i << std::endl;
