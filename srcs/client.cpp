@@ -315,7 +315,7 @@ std::pair<int, std::string> client::get_response()
 		}
 		else
 		{
-			int te = open(_abs_path.c_str(), O_RDWR | O_CREAT| S_IRWXU);
+			int te = open(_abs_path.c_str(), O_RDWR | O_CREAT| S_IRWXU, 0774);
 			return_value.first = te;
 		}
 		/*
@@ -399,7 +399,7 @@ void	client::post_upload()
 	{
 		_abs_path = "." + _info.url_abs_path;
 		std::cout << _abs_path << std::endl;
-		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT | S_IRWXU);
+		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT | S_IRWXU, 0774);
 		std::cout << "396줄에서 체크해봅니다" << f << std::endl;
 		return_value.first = f;
 		return ;//바로 리턴함
