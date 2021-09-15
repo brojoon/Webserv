@@ -169,7 +169,7 @@ void msg_checker::pase_body_for_post(std::map<std::string, std::string> &map)
     }
     if ( map["Content-Disposition"] != "")
     {
-        info.status = "200";
+        info.status = "201";
         info.body_type = map["Content-Type"];
         std::string  Disposition = map["Content-Disposition"];
         ft::ft_strtok(Disposition, "=");
