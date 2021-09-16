@@ -291,6 +291,17 @@ bool is_files(int fd, std::vector<int> files)
 	}
 	return false;
 }
+void erase_file(int fd, std::vector<int> &files)
+{
+	for (std::vector<int>::iterator iter = files.begin(); iter != files.end(); iter++)
+	{
+		if (fd == *iter)
+		{
+			files.erase(iter);
+			return;
+		}
+	}
+}
 void Webserver::initWebServer()
 {
  	int clnt_sock;
@@ -477,7 +488,7 @@ void Webserver::initWebServer()
 									}
 									else
 									{
-										std::cout << "post" << std::endl;
+										std::cout << "큰 파일 에러는 여기에 도달해야합니다" << std::endl;
 										FD_SET(t.first, &instance->read_set);
 										if (fd_max < t.first)
 											fd_max = t.first + 1;
@@ -485,9 +496,8 @@ void Webserver::initWebServer()
 								}
 								else
 								{
-									//std::cout << "이 파일을 읽어야합니다" << t.first << std::endl;
-									if (obj._info.post_err)
-										sock_msg[i] += "\r\n";
+									//if (obj._info.post_err)
+									//	sock_msg[i] += "\r\n";
 									FD_SET(t.first, &instance->read_set);
 									if (fd_max < t.first)
 										fd_max = t.first + 1;
@@ -523,6 +533,7 @@ void Webserver::initWebServer()
 								//std::cout << sock_body[socket] << std::endl;
 								FD_CLR(file, &instance->read_set);
 								close(file);
+								erase_file(file, files);
 								int ppp = ft::ft_contain(sock_body[socket], "\r\n\r\n");
 								//int powerd = ft::ft_contain(sock_body[socket], "X-Powerded-By");
 								if (ppp != -1)
@@ -618,6 +629,7 @@ void Webserver::initWebServer()
 						write(file, last.c_str(), (last.size()));
 						FD_CLR(file, &instance->write_set);
 						close(file);
+						erase_file(file, files);
 						//std::cout << "file 쓰기가 끝났습니다" << std::endl;
 					}
 				}
