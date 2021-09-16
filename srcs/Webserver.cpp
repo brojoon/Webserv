@@ -24,14 +24,14 @@ Webserver::~Webserver()
 	{
 		FD_CLR(it->first, &instance->read_set);
 		FD_CLR(it->first, &instance->write_set);
-		std::cout << "deleted clt socket : " << it->first << std::endl;
+		//std::cout << "deleted clt socket : " << it->first << std::endl;
 		close(it->first);
 	}
 	for (std::map<int, ServerFD>::iterator it = instance->server_sockets.begin();
 		it != instance->server_sockets.end(); it++)
 	{
 		FD_CLR(it->first, &instance->read_set);
-		std::cout << "deleted serv socket : " << it->first << std::endl;
+		//std::cout << "deleted serv socket : " << it->first << std::endl;
 		close(it->first);
 	}
 }
@@ -99,7 +99,7 @@ bool Webserver::parsingConfig(const char *config_file)
 
 	if (ifs.fail())
 	{
-		std::cerr << "Error : config_file open fail" << std::endl;
+		//std::cerr << "Error : config_file open fail" << std::endl;
 		return false;
 	}
 	try
@@ -267,7 +267,7 @@ bool Webserver::parsingConfig(const char *config_file)
 	}
 	catch(const char *e)
 	{
-		std::cerr << e << std::endl;
+		//std::cerr << e << std::endl;
 		ifs.close();
 		return false;
 	}
@@ -356,7 +356,7 @@ void Webserver::initWebServer()
 	}
 
 	fd_max = instance->server_sockets.rbegin()->first;
-	//std::cout << "fd_max : " << fd_max << std::endl;
+	////std::cout << "fd_max : " << fd_max << std::endl;
 
 	//
 
@@ -376,7 +376,7 @@ void Webserver::initWebServer()
 		//timeout.tv_usec = 500;
 		instance->read_temp = instance->read_set;
 		instance->write_temp = instance->write_set;
-		//std::cout << "select count: " << select_count++ <<  std::endl;
+		////std::cout << "select count: " << select_count++ <<  std::endl;
 		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, 0);
 
 		if (ret < 0)
@@ -401,15 +401,15 @@ void Webserver::initWebServer()
 					{
 						if (it->first == i)
 						{
-							//std::cout << "new clnt is connected" << std::endl;
+							////std::cout << "new clnt is connected" << std::endl;
 							clnt_adr_size = sizeof(clnt_adr);
 							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
 							if (clnt_sock == -1)
 								error_handling("accept() error");
-							//std::cout << "clnt sock  " << clnt_sock << std::endl;
+							////std::cout << "clnt sock  " << clnt_sock << std::endl;
 							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
 							instance->is_socket_end[clnt_sock] = false;
-							//std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
+							////std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
 							fcntl(clnt_sock, F_SETFL, O_NONBLOCK);
 							FD_SET(clnt_sock, &instance->read_set);
 							if (fd_max < instance->client_sockets.rbegin()->first)
@@ -422,7 +422,7 @@ void Webserver::initWebServer()
 					{
 						if (is_files(i, files) == false)
 						{
-							//std::cout << "client socket read : " << i << std::endl;
+							////std::cout << "client socket read : " << i << std::endl;
 							port = ntohs(instance->client_sockets[i]);
 							client obj(i, port);
 							if (obj._flag[i] == false)
@@ -432,16 +432,18 @@ void Webserver::initWebServer()
 							std::pair<int, std::string> t = obj.get_response();
 							if (t.first == -1)
 							{
-								std::cout << "opne error" << std::endl;
+								//std::cout << "opne error" << std::endl;
 								close(i);
 								FD_CLR(i, &instance->read_set);
 								FD_CLR(i, &instance->write_set);
+								if (fd_max == i)
+									fd_max--;
 								if (sock_msg.find(i) != sock_msg.end())
 									sock_msg.erase(i);
 								if (sock_body.find(i) != sock_body.end())
 									sock_body.erase(i);
 								erase_file(t.first, files);
-								std::cout << "opne error2" << std::endl;
+								//std::cout << "opne error2" << std::endl;
 								continue;
 							}
 							sock_file_pair.push_back(std::pair<int, int>(i, t.first));
@@ -467,7 +469,7 @@ void Webserver::initWebServer()
 									}
 									else if (obj._info.post_err == false)
 									{
-										//std::cout << "여긴가 ? " << std::endl;
+										////std::cout << "여긴가 ? " << std::endl;
 										FD_SET(t.first, &instance->write_set);
 										int position = sock_msg[i].find_first_of("\n");
 										position++;
@@ -515,9 +517,13 @@ void Webserver::initWebServer()
 								close(file);
 								FD_CLR(file, &instance->read_set);
 								FD_CLR(file, &instance->write_set);
+								if (fd_max == file)
+									fd_max--;
 								close(socket);
 								FD_CLR(socket, &instance->read_set);
 								FD_CLR(socket, &instance->write_set);
+								if (fd_max == socket)
+									fd_max--;
 								sock_msg.erase(socket);
 								sock_body.erase(socket);
 								erase_file(file, files);
@@ -530,6 +536,8 @@ void Webserver::initWebServer()
 							{
 								FD_CLR(file, &instance->read_set);
 								close(file);
+								if (fd_max == file)
+										fd_max--;
 								erase_file(file, files);
 								int ppp = ft::ft_contain(sock_body[socket], "\r\n\r\n");
 								if (ppp != -1)
@@ -597,9 +605,13 @@ void Webserver::initWebServer()
 							close(file);
 							FD_CLR(file, &instance->read_set);
 							FD_CLR(file, &instance->write_set);
+							if (fd_max == file)
+									fd_max--;
 							close(socket);
 							FD_CLR(socket, &instance->read_set);
 							FD_CLR(socket, &instance->write_set);
+							if (fd_max == socket)
+									fd_max--;
 							sock_msg.erase(socket);
 							sock_body.erase(socket);
 							erase_file(file, files);
@@ -607,6 +619,8 @@ void Webserver::initWebServer()
 						}
 						FD_CLR(file, &instance->write_set);
 						close(file);
+						if (fd_max == file)
+							fd_max--;
 						erase_file(file, files);
 					}
 				}

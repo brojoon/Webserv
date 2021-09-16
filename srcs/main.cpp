@@ -8,7 +8,7 @@ void	handleSignal(int signo)
 	if (signo == SIGINT || SIGKILL)
 	{
 		delete WEBSERVER;
-		std::cout << std::endl;
+		//std::cout << std::endl;
 		exit(signo);
 	}
 	else
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
 	// if (argc != 2)
 	// {
-	// 	std::cout << "ERROR usage: ./webserv configFile" << std::endl;
+	// 	//std::cout << "ERROR usage: ./webserv configFile" << std::endl;
 	// 	return 1;
 	// }
 	if (WEBSERVER->parsingConfig("./config/webserv.conf") == false)
