@@ -420,11 +420,11 @@ void Webserver::initWebServer()
 					}
 					if (connected != true) //read message
 					{
-						std::cout << "client socket read : " << i << std::endl;
-						port = ntohs(instance->client_sockets[i]);
-						//std::cout << "is_files: " << is_files(i, files) << std::endl;
 						if (is_files(i, files) == false)
 						{
+							std::cout << "client socket read : " << i << std::endl;
+							port = ntohs(instance->client_sockets[i]);
+							//std::cout << "is_files: " << is_files(i, files) << std::endl;
 							//std::cout << "socket을 읽고 있습니다" << std::endl;
 							client obj(i, port);
 							if (obj._flag[i] == false)
