@@ -367,10 +367,9 @@ void client::exe_method()
 		delet_file();
 	if (_info.method == "POST" && _info.status == "201" && _info.status != "204" )
 		post_upload();
-	if (_info.status == "413")
-	{
+	else
 		_info.post_err = true;
-	}
+		
 	if (chunk_error)
 	{
 		_info.status = "400";
