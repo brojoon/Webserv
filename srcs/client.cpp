@@ -316,6 +316,7 @@ std::pair<int, std::string> client::get_response()
 		else
 		{
 			int te = open(_abs_path.c_str(), O_RDWR | O_CREAT | S_IRWXU, 0774);
+			fcntl(te, F_SETFL, O_NONBLOCK);
 			return_value.first = te;
 		}
 		/*
@@ -411,19 +412,20 @@ void	client::post_upload()
 		_abs_path = "." + _info.url_abs_path;
 		std::cout << _abs_path << std::endl;
 		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT | O_TRUNC | S_IRWXU, 0774);
+		fcntl(f, F_SETFL, O_NONBLOCK);
 		std::cout << "396줄에서 체크해봅니다" << f << std::endl;
 		return_value.first = f;
 		return ;//바로 리턴함
-		std::ofstream file(_abs_path.c_str());
-		if (file.is_open())
-			file << _info.body;
-		else
-		{
-			_info.post_err = true;
-			_info.query = "erro=파일 저장에 실패 하였습니다";
-		}
-		file.close();
-		return ;
+		// std::ofstream file(_abs_path.c_str());
+		// if (file.is_open())
+		// 	file << _info.body;
+		// else
+		// {
+		// 	_info.post_err = true;
+		// 	_info.query = "erro=파일 저장에 실패 하였습니다";
+		// }
+		// file.close();
+		// return ;
 	}
 }
 
@@ -495,6 +497,7 @@ int client::cgi_process()
 			free(argv[1]);
 			for (int i = 0; i < 17; i++)
 				free(env[i]);
+			fcntl(pip[0], F_SETFL, O_NONBLOCK);
 			return pip[0];
 		}
         while ((nbytes = read(pip[0], inbuf, 199)) != 0)
