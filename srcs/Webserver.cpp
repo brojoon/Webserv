@@ -455,7 +455,7 @@ void Webserver::initWebServer()
 								response_list[i] = t.second;
 								FD_SET(i, &instance->write_set);
 								if (fd_max < i)
-									fd_max = i + 1;
+									fd_max = i;
 							}
 							else
 							{
@@ -465,7 +465,7 @@ void Webserver::initWebServer()
 									{
 										FD_SET(t.first, &instance->read_set);
 										if (fd_max < t.first)
-											fd_max = t.first + 1;
+											fd_max = t.first;
 									}
 									else if (obj._info.post_err == false)
 									{
@@ -480,24 +480,24 @@ void Webserver::initWebServer()
 										sock_msg[i].insert(position, std::string("Content-Length: ")+ ss.str() + std::string("\r\n"));
 										response_list[i] = sock_msg[i];
 										if (fd_max < t.first)
-											fd_max = t.first + 1;
+											fd_max = t.first;
 										
 										FD_SET(i, &instance->write_set);
 										if (fd_max < i)
-											fd_max = i + 1;
+											fd_max = i;
 									}
 									else
 									{
 										FD_SET(t.first, &instance->read_set);
 										if (fd_max < t.first)
-											fd_max = t.first + 1;
+											fd_max = t.first;
 									}
 								}
 								else
 								{
 									FD_SET(t.first, &instance->read_set);
 									if (fd_max < t.first)
-										fd_max = t.first + 1;
+										fd_max = t.first;
 								}
 							}
 						}
@@ -554,7 +554,7 @@ void Webserver::initWebServer()
 								sock_msg[socket].clear();
 								FD_SET(socket, &instance->write_set);
 								if (fd_max < socket)
-									fd_max = socket + 1;
+									fd_max = socket;
 							}
 						}
 					}

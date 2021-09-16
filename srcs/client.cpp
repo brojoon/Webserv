@@ -420,8 +420,6 @@ int client::cgi_process()
         dup2(pip[1], 1);
         close(pip[0]);
         close(pip[1]);
-         if (-1 == execve(argv[0], argv, env))
-			write(2, "execve error\n", 13);
         exit(-1);
     }
     else if (pid > 0)
