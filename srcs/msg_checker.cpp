@@ -93,6 +93,7 @@ std::string	msg_checker::find_url(Server& server)
 				if (j == i->second.getLimitExcept().size())
 				{
 					info.status = "403";
+					return (root);
 				}
 			}
 			if ((redirect_Uri = i->second.getRedirection()) != "")
