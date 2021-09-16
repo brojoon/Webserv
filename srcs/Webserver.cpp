@@ -430,6 +430,20 @@ void Webserver::initWebServer()
 							if (obj.isReadEnd() == true)
 								continue;
 							std::pair<int, std::string> t = obj.get_response();
+							if (t.first == -1)
+							{
+								std::cout << "opne error" << std::endl;
+								close(i);
+								FD_CLR(i, &instance->read_set);
+								FD_CLR(i, &instance->write_set);
+								if (sock_msg.find(i) != sock_msg.end())
+									sock_msg.erase(i);
+								if (sock_body.find(i) != sock_body.end())
+									sock_body.erase(i);
+								erase_file(t.first, files);
+								std::cout << "opne error2" << std::endl;
+								continue;
+							}
 							sock_file_pair.push_back(std::pair<int, int>(i, t.first));
 							if (i != t.first)
 								files.push_back(t.first);
@@ -496,6 +510,19 @@ void Webserver::initWebServer()
 							}
 							char b[2560];
 							int r_size = read(i, b, 2560);
+							if (r_size < 0)
+							{
+								close(file);
+								FD_CLR(file, &instance->read_set);
+								FD_CLR(file, &instance->write_set);
+								close(socket);
+								FD_CLR(socket, &instance->read_set);
+								FD_CLR(socket, &instance->write_set);
+								sock_msg.erase(socket);
+								sock_body.erase(socket);
+								erase_file(file, files);
+								continue;
+							}
 							for (int idx = 0; idx < r_size; idx++)
 								sock_body[socket].push_back(b[idx]);
 							
@@ -556,7 +583,7 @@ void Webserver::initWebServer()
 						for (std::vector<std::pair<int, int> >::iterator iter = sock_file_pair.begin(); iter != sock_file_pair.end(); iter++)
 						{
 							if (iter->second == i)
-								socket = iter->first; 
+								socket = iter->first;
 						}
 						int p = ft::ft_contain(sock_msg[socket], "\r\n\r\n");
 						std::string last = sock_msg[socket];
@@ -564,7 +591,20 @@ void Webserver::initWebServer()
 						{
 							last =sock_msg[socket].substr(p, sock_msg[socket].size() - p);
 						}
-						write(file, last.c_str(), (last.size()));
+						int tss = write(file, last.c_str(), (last.size()));
+						if ( tss <= 0 || std::string::size_type(tss) < last.size() )
+						{
+							close(file);
+							FD_CLR(file, &instance->read_set);
+							FD_CLR(file, &instance->write_set);
+							close(socket);
+							FD_CLR(socket, &instance->read_set);
+							FD_CLR(socket, &instance->write_set);
+							sock_msg.erase(socket);
+							sock_body.erase(socket);
+							erase_file(file, files);
+							continue;
+						}
 						FD_CLR(file, &instance->write_set);
 						close(file);
 						erase_file(file, files);
