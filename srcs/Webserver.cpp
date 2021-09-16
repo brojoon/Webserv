@@ -315,7 +315,7 @@ void Webserver::initWebServer()
 	int fd_max;
 	int ret;
 	int port;
-	int select_count = 1;
+	//int select_count = 1;
 	//struct timeval timeout;
 
 	
@@ -356,7 +356,7 @@ void Webserver::initWebServer()
 	}
 
 	fd_max = instance->server_sockets.rbegin()->first;
-	std::cout << "fd_max : " << fd_max << std::endl;
+	//std::cout << "fd_max : " << fd_max << std::endl;
 
 	//
 
@@ -376,7 +376,7 @@ void Webserver::initWebServer()
 		//timeout.tv_usec = 500;
 		instance->read_temp = instance->read_set;
 		instance->write_temp = instance->write_set;
-		std::cout << "select count: " << select_count++ <<  std::endl;
+		//std::cout << "select count: " << select_count++ <<  std::endl;
 		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, 0);
 
 		if (ret < 0)
@@ -401,15 +401,15 @@ void Webserver::initWebServer()
 					{
 						if (it->first == i)
 						{
-							std::cout << "new clnt is connected" << std::endl;
+							//std::cout << "new clnt is connected" << std::endl;
 							clnt_adr_size = sizeof(clnt_adr);
 							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
 							if (clnt_sock == -1)
 								error_handling("accept() error");
-							std::cout << "clnt sock  " << clnt_sock << std::endl;
+							//std::cout << "clnt sock  " << clnt_sock << std::endl;
 							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
 							instance->is_socket_end[clnt_sock] = false;
-							std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
+							//std::cout << "accept_clnt_sock: " << clnt_sock << std::endl;
 							fcntl(clnt_sock, F_SETFL, O_NONBLOCK);
 							FD_SET(clnt_sock, &instance->read_set);
 							if (fd_max < instance->client_sockets.rbegin()->first)
@@ -422,7 +422,7 @@ void Webserver::initWebServer()
 					{
 						if (is_files(i, files) == false)
 						{
-							std::cout << "client socket read : " << i << std::endl;
+							//std::cout << "client socket read : " << i << std::endl;
 							port = ntohs(instance->client_sockets[i]);
 							client obj(i, port);
 							if (obj._flag[i] == false)
@@ -453,7 +453,7 @@ void Webserver::initWebServer()
 									}
 									else if (obj._info.post_err == false)
 									{
-										std::cout << "여긴가 ? " << std::endl;
+										//std::cout << "여긴가 ? " << std::endl;
 										FD_SET(t.first, &instance->write_set);
 										int position = sock_msg[i].find_first_of("\n");
 										position++;
@@ -461,7 +461,7 @@ void Webserver::initWebServer()
 										int s = sock_msg[i].size() - pp;
 										std::stringstream ss;
 										ss << s;
-										sock_msg[i].insert(position, std::string("content-length: ")+ ss.str() + std::string("\r\n"));
+										sock_msg[i].insert(position, std::string("Content-Length: ")+ ss.str() + std::string("\r\n"));
 										response_list[i] = sock_msg[i];
 										if (fd_max < t.first)
 											fd_max = t.first + 1;
@@ -511,7 +511,7 @@ void Webserver::initWebServer()
 								std::stringstream ss;
 								ss << s;
 								int po = sock_msg[socket].find_first_of("\n");
-								sock_msg[socket].insert(po + 1, std::string("content-length: ")+ ss.str() + std::string("\r\n"));
+								sock_msg[socket].insert(po + 1, std::string("Content-Length: ")+ ss.str() + std::string("\r\n"));
 								if (ft::ft_contain(sock_msg[socket], "\r\n\r\n") == -1)
 									sock_msg[socket] += std::string("\r\n");
 								response_list[socket] = sock_msg[socket] + sock_body[socket];

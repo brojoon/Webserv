@@ -115,7 +115,7 @@ client::client(int socket, int port):chunk_error(false)
 		map[socket] += buf[i];
 	if (ret <= 0)
 	{
-		std::cout << "disconnected: " << socket << std::endl;
+		//std::cout << "disconnected: " << socket << std::endl;
 		FD_CLR(socket, &WEBSERVER->getReadSet());
 		FD_CLR(socket, &WEBSERVER->getWriteSet());
 		close(socket);
@@ -234,7 +234,6 @@ std::pair<int, std::string> client::get_response()
 	{
 		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
 		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
-		std::cout << "_abs_path : " << _abs_path << std::endl;
 		_info.is_cgi = false;
 	}
 	else if (_info.method == "DELETE" && _info.status == "204")
@@ -244,7 +243,7 @@ std::pair<int, std::string> client::get_response()
 	else if (_info.status == "301")
 	{
 		ret += std::string("Location: .") + _info.url_abs_path + std::string("\r\n");
-		_abs_path = "./var/www/html/index.html";
+		_abs_path = "./var/www/html/errors/default.html";
 	}
 	else if (_info.method == "POST" && _info.status == "201")
 	{
@@ -293,7 +292,7 @@ std::pair<int, std::string> client::get_response()
 	{
 		if (post_flag == 1)
 		{
-			std::cout << "post flag" << std::endl;
+			//std::cout << "post flag" << std::endl;
 			ret += "\r\n";
 			if (!_info.post_err)
 				ret += _info.body;
@@ -377,7 +376,7 @@ void	client::post_upload()
 		std::cout << _abs_path << std::endl;
 		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT | O_TRUNC | S_IRWXU, 0774);
 		fcntl(f, F_SETFL, O_NONBLOCK);
-		std::cout << "396줄에서 체크해봅니다" << f << std::endl;
+		//std::cout << "396줄에서 체크해봅니다" << f << std::endl;
 		return_value.first = f;
 		return ;
 	}
@@ -399,7 +398,7 @@ int client::cgi_process()
     int     pip[2];
     argv[0] = strdup(_info.cgi_path.c_str());
     argv[1] = strdup(("." + _info.url_abs_path).c_str());
-	std::cout << "file path" << argv[1] << std::endl;
+	//std::cout << "file path" << argv[1] << std::endl;
 	argv[2] = NULL;
 	std::stringstream ss;
 	ss << _info.port;
@@ -499,7 +498,7 @@ bool client::isReadEnd()
 void client::bodySizeError(std::map<int, std::string> &map, int pos, int socket, int port, std::string errnum)
 {
 	_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
-	std::cout << "body size : " << _header_field["body"].size() << std::endl;
+	//std::cout << "body size : " << _header_field["body"].size() << std::endl;
 	_flag[socket] = true;
 	FD_CLR(socket, &WEBSERVER->getReadSet());
 	shutdown(socket, SHUT_RD);

@@ -290,7 +290,7 @@ msg_checker::return_type msg_checker::check(std::string &firstline, std::map<std
 			return (info);
 		}
 	}
-	std::cout << "root " << info.url_abs_path << std::endl;
+	//std::cout << "root " << info.url_abs_path << std::endl;
 	
 	return (info);
 }
