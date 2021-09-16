@@ -459,6 +459,7 @@ void Webserver::initWebServer()
 									}
 									else if (obj._info.post_err == false)
 									{
+										std::cout << "여긴가 ? " << std::endl;
 										/*if (obj._info.post_err == true)
 										{
 											FD_SET(i, &instance->write_set);//에러 메시지를 보낼것
@@ -489,6 +490,7 @@ void Webserver::initWebServer()
 									else
 									{
 										std::cout << "큰 파일 에러는 여기에 도달해야합니다" << std::endl;
+										
 										FD_SET(t.first, &instance->read_set);
 										if (fd_max < t.first)
 											fd_max = t.first + 1;
@@ -539,19 +541,43 @@ void Webserver::initWebServer()
 								if (ppp != -1)
 									sock_body[socket] = sock_body[socket].substr(ppp, sock_body[socket].size() - ppp);
 								
+								
+								/*if (aaa == -1)
+									sock_msg[socket].insert(sock_msg[socket].size(), "\r\n");
+								aaa = ft::ft_contain(sock_msg[socket], "\r\n\r\n");
+								if (aaa == -1)
+									sock_msg[socket].insert(sock_msg[socket].size(), "\r\n");*/
+								
 								int s = sock_body[socket].size();
 								std::stringstream ss;
 								ss << s;
 								//std::cout << "ss : "<< ss <<std::endl;
-								sock_msg[socket] += std::string("content-length: ")+ ss.str() + std::string("\r\n");
-								sock_msg[socket] += std::string("\r\n");
+								int po = sock_msg[socket].find_first_of("\n");
+
+								sock_msg[socket].insert(po + 1, std::string("content-length: ")+ ss.str() + std::string("\r\n"));
+								if (ft::ft_contain(sock_msg[socket], "\r\n\r\n") == -1)
+									sock_msg[socket] += std::string("\r\n");
 								//int as = open("test.txt", O_RDWR | O_CREAT | O_TRUNC);
 								//write(as, sock_msg[socket].c_str(), sock_msg[socket].size());
 								//write(as, "|||||\n", 6);
 								//write(as, sock_body[socket].c_str(), sock_body[socket].size());
 								//std::cout << "size: " << sock_body[socket].size() << std::endl;
 								//close(as);
+								//int aaa = ft::ft_contain(sock_msg[socket], "\r\n\r\n");
+								//std::cout << "aaa : " << aaa << std::endl;
+								//std::cout << sock_msg[aaa] << std::endl;
+								/*if (aaa != -1)
+								{
+									if (sock_msg[aaa] == "\r")
+									{
+										std::cout << "개행두번" << std::endl;
+										sock_msg[aaa].erase(aaa, aaa+1);
+									}
+								}*/
 								response_list[socket] = sock_msg[socket] + sock_body[socket];//(나)
+								std::cout << sock_msg[socket] << std::endl;
+								std::cout << "-----------------" << std::endl;
+								std::cout << sock_body[socket] << std::endl;
 								//std::cout << "파일로 부터 읽은 내용은 다음과 같습니다" << std::endl;
 								//std::cout << sock_body[socket] << std::endl;
 								sock_body[socket].clear();

@@ -232,7 +232,6 @@ std::pair<int, std::string> client::get_response()
 	{
 		post_flag = 1;
 	}
-	//ret += std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n");
 	ret += std::string("Server: 42Webserv/1.0\r\n");
 	ret += std::string("Date: ") + currentDateTime()+ std::string("\r\n");
 
@@ -245,16 +244,14 @@ std::pair<int, std::string> client::get_response()
 	}
 	else if (_info.method == "DELETE" && _info.status == "204")
 	{
-		ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
-		ret += std::string("\r\n");
-		return std::pair<int, std::string>(socket_num, ret);
-		//return ret;
+		_abs_path = "./var/www/html/delete.html";
 	}
 	else if (_info.status == "301")
 	{
-		ret += std::string("Location: ") + _info.url_abs_path + std::string("\r\n");
+		ret += std::string("Location: .") + _info.url_abs_path + std::string("\r\n");
+		_abs_path = "./var/www/html/index.html";
 	}
-	else if (_info.method == "POST" && _info.is_file)
+	else if (_info.method == "POST" && _info.status == "201")
 	{
 		if(!_info.post_err)
 		{
@@ -273,10 +270,8 @@ std::pair<int, std::string> client::get_response()
 	}
 	else if (_info.status == "501")
 	{
-		ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
-		ret += std::string("\r\n");
-		return std::pair<int, std::string>(socket_num, ret);
-		//return ret;
+		_abs_path = "./var/www/html/errors/default.html";
+		_info.is_cgi = false;
 	}
 	else if (!_info.check_autoindex)
 	{
@@ -312,7 +307,7 @@ std::pair<int, std::string> client::get_response()
 		{
 			std::cout << "post flag" << std::endl;
 			ret += "\r\n";
-			ret += _info.body;
+			//ret += _info.body;
 			if (!_info.post_err)
 				ret += _info.body;
 			else
@@ -320,7 +315,7 @@ std::pair<int, std::string> client::get_response()
 		}
 		else
 		{
-			int te = open(_abs_path.c_str(), O_RDWR | O_CREAT| S_IRWXU);
+			int te = open(_abs_path.c_str(), O_RDWR | O_CREAT | S_IRWXU, 0774);
 			return_value.first = te;
 		}
 		/*
@@ -346,7 +341,7 @@ std::pair<int, std::string> client::get_response()
 		s = body.size();
 		std::stringstream ss;
 		ss << s;
-		ret += std::string("content-length: ")+ ss.str() + std::string("\r\n");
+		ret += std::string("Content-Length: ")+ ss.str() + std::string("\r\n");
 		ret += std::string("\r\n");
 		ret += body;
 	}
@@ -361,6 +356,7 @@ std::string client::getMethod()
 }
 void client::exe_method()
 {
+
 	if (_info.autoindex && _info.status == "404" && _info.same_location)
 	{
 		_info.status = "200";
@@ -368,8 +364,12 @@ void client::exe_method()
 	}
 	if (_info.method == "DELETE" && _info.status == "204")
 		delet_file();
-	if (_info.method == "POST" && _info.is_file && _info.status != "204")
+	if (_info.method == "POST" && _info.status == "201" && _info.status != "204" )
 		post_upload();
+	if (_info.status == "413")
+	{
+		_info.post_err = true;
+	}
 	if (chunk_error)
 	{
 		_info.status = "400";
@@ -379,7 +379,13 @@ void client::exe_method()
 
 void	client::post_upload()
 {
-	std::cout << "info.body_size" << _info.body_size << std::cout;
+	//std::cout << "status : " << _info.status << std::endl;
+	//std::cout << "info.body_size" << _info.body_size << std::cout;
+	/*if (_info.status == "413")
+	{
+		_info.post_err = true;
+		return;//?
+	}*/
 	if (_info.body == "\r\n")
 	{
 		_info.post_err = true;
@@ -394,17 +400,17 @@ void	client::post_upload()
 		return ;
 	}
 	if (_info.extention != ".jpg" && _info.extention != ".png" && _info.extention != ".JPEG"
-		&& _info.extention != ".php" && _info.extention != ".html" && _info.extention != ".htm")
+		&& _info.extention != ".html" && _info.extention != ".htm")
 	{
 		_info.post_err = true;
-		_info.query = "erro=업로드 가능 파일 형식 => jpg/jpeg/png, html/htm, php";
+		_info.query = "erro=업로드 가능 파일 형식 => jpg/jpeg/png, html/htm";
 		return ;
 	}
 	if (_info.post_err == false)
 	{
 		_abs_path = "." + _info.url_abs_path;
 		std::cout << _abs_path << std::endl;
-		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT | S_IRWXU);
+		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT | O_TRUNC | S_IRWXU, 0774);
 		std::cout << "396줄에서 체크해봅니다" << f << std::endl;
 		return_value.first = f;
 		return ;//바로 리턴함
