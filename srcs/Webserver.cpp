@@ -388,7 +388,7 @@ void Webserver::initWebServer()
 		}
 		else if (ret == 0)
 		{
-			printf("time out!\n");
+			//printf("time out!\n");
 			continue;
 		}
 		else
@@ -435,9 +435,9 @@ void Webserver::initWebServer()
 							if (t.first == -1)
 							{
 								//std::cout << "opne error" << std::endl;
-								close(i);
 								FD_CLR(i, &instance->read_set);
 								FD_CLR(i, &instance->write_set);
+								close(i);
 								if (fd_max == i)
 									fd_max--;
 								if (sock_msg.find(i) != sock_msg.end())
@@ -516,14 +516,14 @@ void Webserver::initWebServer()
 							int r_size = read(i, b, 2560);
 							if (r_size < 0)
 							{
-								close(file);
 								FD_CLR(file, &instance->read_set);
 								FD_CLR(file, &instance->write_set);
+								close(file);
 								if (fd_max == file)
 									fd_max--;
-								close(socket);
 								FD_CLR(socket, &instance->read_set);
 								FD_CLR(socket, &instance->write_set);
+								close(socket);
 								if (fd_max == socket)
 									fd_max--;
 								sock_msg.erase(socket);
@@ -604,14 +604,14 @@ void Webserver::initWebServer()
 						int tss = write(file, last.c_str(), (last.size()));
 						if ( tss <= 0 || std::string::size_type(tss) < last.size() )
 						{
-							close(file);
 							FD_CLR(file, &instance->read_set);
 							FD_CLR(file, &instance->write_set);
+							close(file);
 							if (fd_max == file)
 									fd_max--;
-							close(socket);
 							FD_CLR(socket, &instance->read_set);
 							FD_CLR(socket, &instance->write_set);
+							close(socket);
 							if (fd_max == socket)
 									fd_max--;
 							sock_msg.erase(socket);
