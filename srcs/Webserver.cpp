@@ -22,8 +22,7 @@ Webserver::~Webserver()
 	for (std::map<int, unsigned short>::iterator it = instance->client_sockets.begin();
 		it != instance->client_sockets.end(); it++)
 	{
-		FD_CLR(it->first, &instance->read_set);
-		FD_CLR(it->first, &instance->write_set);
+		removeOnSelect(it->first);
 		//std::cout << "deleted clt socket : " << it->first << std::endl;
 		close(it->first);
 	}
@@ -76,6 +75,12 @@ fd_set &Webserver::getReadSet()
 fd_set &Webserver::getWriteSet()
 {
 	return this->write_set;
+}
+
+void Webserver::removeOnSelect(int socket)
+{
+	FD_CLR(socket, &instance->read_set);
+	FD_CLR(socket, &instance->write_set);
 }
 
 bool Webserver::parsingConfig(const char *config_file)
@@ -435,8 +440,7 @@ void Webserver::initWebServer()
 							if (t.first == -1)
 							{
 								//std::cout << "opne error" << std::endl;
-								FD_CLR(i, &instance->read_set);
-								FD_CLR(i, &instance->write_set);
+								removeOnSelect(i);
 								close(i);
 								if (fd_max == i)
 									fd_max--;
@@ -512,18 +516,32 @@ void Webserver::initWebServer()
 								if (iter->second == i)
 									socket = iter->first; 
 							}
+							if (instance->getClientSockets().find(socket) == instance->getClientSockets().end())
+							{
+								removeOnSelect(file);
+								close(file);
+								if (fd_max == file)
+										fd_max--;
+								removeOnSelect(socket);
+								close(socket);
+								if (fd_max == socket)
+										fd_max--;
+								sock_msg.erase(socket);
+								sock_body.erase(socket);
+								erase_file(file, files);
+								continue;
+							}
 							char b[2560];
 							int r_size = read(i, b, 2560);
 							if (r_size < 0)
 							{
-								FD_CLR(file, &instance->read_set);
-								FD_CLR(file, &instance->write_set);
+								removeOnSelect(file);
 								close(file);
 								if (fd_max == file)
 									fd_max--;
-								FD_CLR(socket, &instance->read_set);
-								FD_CLR(socket, &instance->write_set);
+								removeOnSelect(socket);
 								close(socket);
+								instance->client_sockets.erase(i);
 								if (fd_max == socket)
 									fd_max--;
 								sock_msg.erase(socket);
@@ -567,8 +585,7 @@ void Webserver::initWebServer()
 					{
 						if (write(i, response_list[i].c_str(), response_list[i].size()) <= 0)
 						{
-							FD_CLR(i, &instance->write_set);
-							FD_CLR(i, &instance->read_set);
+							removeOnSelect(i);
 							close(i);
 							instance->client_sockets.erase(i);
 						}
@@ -595,6 +612,21 @@ void Webserver::initWebServer()
 							if (iter->second == i)
 								socket = iter->first;
 						}
+						if (instance->getClientSockets().find(socket) == instance->getClientSockets().end())
+						{
+							removeOnSelect(file);
+							close(file);
+							if (fd_max == file)
+									fd_max--;
+							removeOnSelect(socket);
+							close(socket);
+							if (fd_max == socket)
+									fd_max--;
+							sock_msg.erase(socket);
+							sock_body.erase(socket);
+							erase_file(file, files);
+							continue;
+						}
 						int p = ft::ft_contain(sock_msg[socket], "\r\n\r\n");
 						std::string last = sock_msg[socket];
 						if (p != -1)
@@ -604,14 +636,13 @@ void Webserver::initWebServer()
 						int tss = write(file, last.c_str(), (last.size()));
 						if ( tss <= 0 || std::string::size_type(tss) < last.size() )
 						{
-							FD_CLR(file, &instance->read_set);
-							FD_CLR(file, &instance->write_set);
+							removeOnSelect(file);
 							close(file);
 							if (fd_max == file)
 									fd_max--;
-							FD_CLR(socket, &instance->read_set);
-							FD_CLR(socket, &instance->write_set);
+							removeOnSelect(socket);
 							close(socket);
+							instance->client_sockets.erase(socket);
 							if (fd_max == socket)
 									fd_max--;
 							sock_msg.erase(socket);

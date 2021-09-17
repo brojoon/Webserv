@@ -61,6 +61,7 @@ class Webserver
 		fd_set &getWriteSet();
 		
 
+		void removeOnSelect(int socket);
 		bool parsingConfig(const char *config_file);
 		void error_handling(const char *message);
 		void initWebServer();
