@@ -50,8 +50,8 @@ std::string client::_autoindex()
     }
 	else
     {
-		////std::cout << "dir open error" << std::endl;
-	    exit(-1);
+		_info.status = "404";
+	    return ft::err().get404();
 	}
 	return ret;
 }
@@ -258,6 +258,7 @@ std::pair<int, std::string> client::get_response()
 			_info.url_abs_path.clear();
 			_info.url_abs_path = "/var/www/html/upload/default.php";
 			_info.extention = ".php";
+			_info.status = "200";
 			_info.is_cgi = true;
 			ret += std::string("Location: ./upload/default.php") + std::string("\r\n");
 		}
