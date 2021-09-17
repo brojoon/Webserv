@@ -445,12 +445,12 @@ int client::cgi_process()
 			fcntl(pip[0], F_SETFL, O_NONBLOCK);
 			return pip[0];
 		}
-        while ((nbytes = read(pip[0], inbuf, 199)) != 0)
-        {
-            inbuf[nbytes] = 0;
-            ret += inbuf;
-        }
-		close(pip[0]);
+        // while ((nbytes = read(pip[0], inbuf, 199)) != 0)
+        // {
+        //     inbuf[nbytes] = 0;
+        //     ret += inbuf;
+        // }
+		// close(pip[0]);
     }
     else
     {
