@@ -377,6 +377,8 @@ void Webserver::initWebServer()
 		instance->read_temp = instance->read_set;
 		instance->write_temp = instance->write_set;
 		////std::cout << "select count: " << select_count++ <<  std::endl;
+		if (fd_max >= 1000)
+			exit(1);
 		ret = select(fd_max + 1, &instance->read_temp, &instance->write_temp, NULL, 0);
 
 		if (ret < 0)
@@ -405,7 +407,7 @@ void Webserver::initWebServer()
 							clnt_adr_size = sizeof(clnt_adr);
 							clnt_sock = accept(instance->server_sockets[it->first].socket, (struct sockaddr *)&clnt_adr, &clnt_adr_size);
 							if (clnt_sock == -1)
-								error_handling("accept() error");
+								exit(1);
 							////std::cout << "clnt sock  " << clnt_sock << std::endl;
 							instance->client_sockets.insert(std::pair<int, unsigned short>(clnt_sock, it->second.serv_adr.sin_port));
 							instance->is_socket_end[clnt_sock] = false;
