@@ -521,11 +521,11 @@ void Webserver::initWebServer()
 								removeOnSelect(file);
 								close(file);
 								if (fd_max == file)
-										fd_max--;
+									fd_max--;
 								removeOnSelect(socket);
 								close(socket);
 								if (fd_max == socket)
-										fd_max--;
+									fd_max--;
 								sock_msg.erase(socket);
 								sock_body.erase(socket);
 								erase_file(file, files);
@@ -557,7 +557,7 @@ void Webserver::initWebServer()
 								FD_CLR(file, &instance->read_set);
 								close(file);
 								if (fd_max == file)
-										fd_max--;
+									fd_max--;
 								erase_file(file, files);
 								int ppp = ft::ft_contain(sock_body[socket], "\r\n\r\n");
 								if (ppp != -1)
@@ -617,11 +617,11 @@ void Webserver::initWebServer()
 							removeOnSelect(file);
 							close(file);
 							if (fd_max == file)
-									fd_max--;
+								fd_max--;
 							removeOnSelect(socket);
 							close(socket);
 							if (fd_max == socket)
-									fd_max--;
+								fd_max--;
 							sock_msg.erase(socket);
 							sock_body.erase(socket);
 							erase_file(file, files);
@@ -639,12 +639,12 @@ void Webserver::initWebServer()
 							removeOnSelect(file);
 							close(file);
 							if (fd_max == file)
-									fd_max--;
+								fd_max--;
 							removeOnSelect(socket);
 							close(socket);
 							instance->client_sockets.erase(socket);
 							if (fd_max == socket)
-									fd_max--;
+								fd_max--;
 							sock_msg.erase(socket);
 							sock_body.erase(socket);
 							erase_file(file, files);

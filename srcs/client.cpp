@@ -116,8 +116,7 @@ client::client(int socket, int port):chunk_error(false)
 	if (ret <= 0)
 	{
 		//std::cout << "disconnected: " << socket << std::endl;
-		FD_CLR(socket, &WEBSERVER->getReadSet());
-		FD_CLR(socket, &WEBSERVER->getWriteSet());
+		WEBSERVER->removeOnSelect(socket);
 		close(socket);
 		WEBSERVER->getClientSockets().erase(socket);
 		// for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
