@@ -50,8 +50,8 @@ std::string client::_autoindex()
     }
 	else
     {
-		_info.status = "404";
-	    return ft::err().get404();
+	    _info.status = "404";
+		return ft::err().get404();
 	}
 	return ret;
 }
@@ -115,7 +115,7 @@ client::client(int socket, int port):chunk_error(false)
 		map[socket] += buf[i];
 	if (ret <= 0)
 	{
-		////std::cout << "disconnected: " << socket << std::endl;
+		std::cout << "disconnected: " << socket << std::endl;
 		FD_CLR(socket, &WEBSERVER->getReadSet());
 		FD_CLR(socket, &WEBSERVER->getWriteSet());
 		close(socket);
@@ -123,11 +123,12 @@ client::client(int socket, int port):chunk_error(false)
 		for (std::map<int, unsigned short>::iterator it = WEBSERVER->getClientSockets().begin();
 		it != WEBSERVER->getClientSockets().end(); it++)
 		{
-			//std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
+			std::cout << "아직 client sockets에 존재하는fd들 : " << it->first << std::endl;
 		}
 		is_read_end = true;
 		return;
 	}
+	std::cout << "현재 map size()" << map[socket].size() << std::endl;
 	buf[ret] = 0;
 	if ((pos = ft_contain(map[socket], "\r\n\r\n")) != -1)// 헤더의 끝
 	{
@@ -154,11 +155,13 @@ client::client(int socket, int port):chunk_error(false)
 		}
 		else if (_header_field.find("Content-Length") != _header_field.end())
 		{
-			////std::cout <<"length: " << length << std::endl;
-			////std::cout <<"map[socket].size(): " << map[socket].size() << std::endl;
-			////std::cout <<"pos: " << pos << std::endl;
+			//length = atoi(_header_field["Content-Length"].c_str());
+			std::cout <<"length: " << length << std::endl;
+			std::cout <<"map[socket].size(): " << map[socket].size() << std::endl;
+			std::cout <<"pos: " << pos << std::endl;
 			if (length < (int)(map[socket].size() - pos))
 			{
+				std::cout << "body_size err 입니다" << std::endl;
 				bodySizeError(map, pos, socket, port, "400");
 				return;
 			}
@@ -170,8 +173,10 @@ client::client(int socket, int port):chunk_error(false)
 				{
 					if (*it2 == (unsigned short)port)
 					{
-						if ((map[socket].size() - pos) > it->second.getClientMaxBodySize())
+						if ((map[socket].size() - pos) > it->second.getClientMaxBodySize())/* || 
+							length > (int)it->second.getClientMaxBodySize())*/
 						{
+							std::cout << "body_size err2 입니다" << std::endl;
 							bodySizeError(map, pos, socket, port, "413");
 							return;
 						}
@@ -180,7 +185,7 @@ client::client(int socket, int port):chunk_error(false)
 			}
 			if ((unsigned long)length > (map[socket].size() - pos))
 			{
-				////std::cout << "length에 도달못하여 더 읽습니다" << std::endl;
+				std::cout << "length에 도달못하여 더 읽습니다" << std::endl;
 				_flag[socket] = false;
 				return;
 			}
@@ -198,11 +203,11 @@ client::client(int socket, int port):chunk_error(false)
 		}
 		if (_flag[socket] == true)
 		{
-			_info = msg_checker().check(_first_line, _header_field, port);
+			_info = msg_checker().check(_first_line, _header_field, port);//content를 check()함수에 넘겨주어야함
 			map[socket].clear();
 		}
 	}
-	else
+	else // 더 읽어들여야함
 	{
 		_flag[socket] = false;
 		return ;
@@ -234,6 +239,7 @@ std::pair<int, std::string> client::get_response()
 	{
 		ret += std::string("Content-type: text/html; charset=UTF-8\r\n");
 		_abs_path += "." + _info.error_pages[atoi(_info.status.c_str())];
+		std::cout << "_abs_path : " << _abs_path << std::endl;
 		_info.is_cgi = false;
 	}
 	else if (_info.method == "DELETE" && _info.status == "204")
@@ -243,7 +249,7 @@ std::pair<int, std::string> client::get_response()
 	else if (_info.status == "301")
 	{
 		ret += std::string("Location: .") + _info.url_abs_path + std::string("\r\n");
-		_abs_path = "./var/www/html/errors/default.html";
+		_abs_path = "./var/www/html/index.html";
 	}
 	else if (_info.method == "POST" && _info.status == "201")
 	{
@@ -258,8 +264,8 @@ std::pair<int, std::string> client::get_response()
 			_info.url_abs_path.clear();
 			_info.url_abs_path = "/var/www/html/upload/default.php";
 			_info.extention = ".php";
-			_info.status = "200";
 			_info.is_cgi = true;
+			_info.status = "200";
 			ret += std::string("Location: ./upload/default.php") + std::string("\r\n");
 		}
 	}
@@ -288,13 +294,21 @@ std::pair<int, std::string> client::get_response()
 			exit(1);
 		else
 			return_value.first = r;
+		/*
+		body = cgi_process();
+		body = 
+		if (body == "-1")
+			_info.status = "204";
+		_info.is_cgi = false;
+		*/
 	}
 	else
 	{
 		if (post_flag == 1)
 		{
-			////std::cout << "post flag" << std::endl;
+			std::cout << "post flag" << std::endl;
 			ret += "\r\n";
+			//ret += _info.body;
 			if (!_info.post_err)
 				ret += _info.body;
 			else
@@ -306,6 +320,20 @@ std::pair<int, std::string> client::get_response()
 			fcntl(te, F_SETFL, O_NONBLOCK);
 			return_value.first = te;
 		}
+		/*
+		file.open(_abs_path.c_str(), std::ifstream::in);
+		if (file.is_open())
+		{
+			buffer << file.rdbuf();
+			body = buffer.str();
+			file.close();
+		}
+		else
+		{
+			std::cout << "open error" << std::endl;
+			exit(1);
+		}
+		*/
 	}
 
 	ret.insert(0, std::string("HTTP/1.1 ") + _info.status + std::string(" ") + ft::err().get_err(_info.status) + std::string("\r\n"));
@@ -321,6 +349,7 @@ std::pair<int, std::string> client::get_response()
 	}
 	return_value.second = ret;
 	return return_value;
+	//return ret;
 }
 
 std::string client::getMethod()
@@ -351,6 +380,13 @@ void client::exe_method()
 
 void	client::post_upload()
 {
+	//std::cout << "status : " << _info.status << std::endl;
+	//std::cout << "info.body_size" << _info.body_size << std::cout;
+	/*if (_info.status == "413")
+	{
+		_info.post_err = true;
+		return;//?
+	}*/
 	if (_info.body == "\r\n")
 	{
 		_info.post_err = true;
@@ -374,12 +410,22 @@ void	client::post_upload()
 	if (_info.post_err == false)
 	{
 		_abs_path = "." + _info.url_abs_path;
-		//std::cout << _abs_path << std::endl;
+		std::cout << _abs_path << std::endl;
 		int f = open(_abs_path.c_str(), O_RDWR | O_CREAT | O_TRUNC | S_IRWXU, 0774);
 		fcntl(f, F_SETFL, O_NONBLOCK);
-		////std::cout << "396줄에서 체크해봅니다" << f << std::endl;
+		std::cout << "396줄에서 체크해봅니다" << f << std::endl;
 		return_value.first = f;
-		return ;
+		return ;//바로 리턴함
+		// std::ofstream file(_abs_path.c_str());
+		// if (file.is_open())
+		// 	file << _info.body;
+		// else
+		// {
+		// 	_info.post_err = true;
+		// 	_info.query = "erro=파일 저장에 실패 하였습니다";
+		// }
+		// file.close();
+		// return ;
 	}
 }
 
@@ -399,7 +445,7 @@ int client::cgi_process()
     int     pip[2];
     argv[0] = strdup(_info.cgi_path.c_str());
     argv[1] = strdup(("." + _info.url_abs_path).c_str());
-	////std::cout << "file path" << argv[1] << std::endl;
+	std::cout << "file path" << argv[1] << std::endl;
 	argv[2] = NULL;
 	std::stringstream ss;
 	ss << _info.port;
@@ -407,11 +453,11 @@ int client::cgi_process()
     char **env = ft::env("0", _info.extention, _info.url_abs_path, _info.query,\
     		_info.method,_info.host, ss.str(), _info.version).get_env();
 
-   // int nbytes;
-    //char inbuf[200];
+    int nbytes;
+    char inbuf[200];
     if (pipe(pip) != 0)
     {
-        //std::cout << "pipe() error" << std::endl;
+        std::cout << "pipe() error" << std::endl;
         return 0;
     }
     pid_t pid = fork();
@@ -421,6 +467,8 @@ int client::cgi_process()
         dup2(pip[1], 1);
         close(pip[0]);
         close(pip[1]);
+         if (-1 == execve(argv[0], argv, env))
+			write(2, "execve error\n", 13);
         exit(-1);
     }
     else if (pid > 0)
@@ -439,6 +487,12 @@ int client::cgi_process()
 		}
 		else
 		{
+			/*char buf[10000];
+			int h = read(pip[0], buf, 9999);
+			buf[h] = 0;
+			std::cout << buf << std::endl;
+			while (1)
+			{}*/
 			free(argv[0]);
 			free(argv[1]);
 			for (int i = 0; i < 17; i++)
@@ -446,16 +500,16 @@ int client::cgi_process()
 			fcntl(pip[0], F_SETFL, O_NONBLOCK);
 			return pip[0];
 		}
-        // while ((nbytes = read(pip[0], inbuf, 199)) != 0)
-        // {
-        //     inbuf[nbytes] = 0;
-        //     ret += inbuf;
-        // }
-		// close(pip[0]);
+        while ((nbytes = read(pip[0], inbuf, 199)) != 0)
+        {
+            inbuf[nbytes] = 0;
+            ret += inbuf;
+        }
+		close(pip[0]);
     }
     else
     {
-        //std::cout << "fork error " << std::endl;
+        std::cout << "fork error " << std::endl;
         exit (1);
     }
     free(argv[0]);
@@ -497,7 +551,7 @@ bool client::isReadEnd()
 void client::bodySizeError(std::map<int, std::string> &map, int pos, int socket, int port, std::string errnum)
 {
 	_header_field["body"] =  map[socket].substr(pos, map[socket].size() - pos);
-	////std::cout << "body size : " << _header_field["body"].size() << std::endl;
+	std::cout << "body size : " << _header_field["body"].size() << std::endl;
 	_flag[socket] = true;
 	FD_CLR(socket, &WEBSERVER->getReadSet());
 	shutdown(socket, SHUT_RD);
