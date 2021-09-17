@@ -406,8 +406,8 @@ int client::cgi_process()
     char **env = ft::env("0", _info.extention, _info.url_abs_path, _info.query,\
     		_info.method,_info.host, ss.str(), _info.version).get_env();
 
-    int nbytes;
-    char inbuf[200];
+   // int nbytes;
+    //char inbuf[200];
     if (pipe(pip) != 0)
     {
         //std::cout << "pipe() error" << std::endl;
