@@ -99,7 +99,7 @@ bool Webserver::parsingConfig(const char *config_file)
 
 	if (ifs.fail())
 	{
-		//std::cerr << "Error : config_file open fail" << std::endl;
+		std::cerr << "Error : config_file open fail" << std::endl;
 		return false;
 	}
 	try
@@ -267,7 +267,7 @@ bool Webserver::parsingConfig(const char *config_file)
 	}
 	catch(const char *e)
 	{
-		//std::cerr << e << std::endl;
+		std::cerr << e << std::endl;
 		ifs.close();
 		return false;
 	}
@@ -383,7 +383,7 @@ void Webserver::initWebServer()
 
 		if (ret < 0)
 		{
-			printf("select error detached");
+			//printf("select error detached");
 			break;
 		}
 		else if (ret == 0)
