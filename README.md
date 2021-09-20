@@ -4,6 +4,11 @@
 실제 Nginx와 동작방식을 비교해가며 프로젝트를 진행 하였으며 HTTP/1.1을 기준으로 하고있지만 select함수를 사용한
 multiplexing이 적용되어 있습니다. 
 
+<!-- Wiki -->
+## Wiki
+
+* [Request 정리](https://github.com/brojoon/Webserv/wiki/Request-%EC%A0%95%EB%A6%AC)
+
 <!-- COLLABORATOR -->
 ## Collaborator
 
