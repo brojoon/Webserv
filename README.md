@@ -6,7 +6,7 @@ multiplexing이 적용되어 있습니다.
 
 <!-- Wiki -->
 ## Wiki
-* [HTTP 정리](https://github.com/brojoon/Webserv/wiki/Request-%EC%A0%95%EB%A6%AC)
+* [HTTP 정리](https://github.com/brojoon/Webserv/wiki/HTTP-%EC%A0%95%EB%A6%AC)
 * [Request 정리](https://github.com/brojoon/Webserv/wiki/Request-%EC%A0%95%EB%A6%AC)
 * [Response 정리](https://github.com/brojoon/Webserv/wiki/Response-%EC%A0%95%EB%A6%AC)
 
