@@ -9,6 +9,7 @@
 * [Request 정리](https://github.com/brojoon/Webserv/wiki/Request-%EC%A0%95%EB%A6%AC)
 * [Response 정리](https://github.com/brojoon/Webserv/wiki/Response-%EC%A0%95%EB%A6%AC)
 * [CGI 정리](https://github.com/brojoon/Webserv/wiki/CGI-%EC%A0%95%EB%A6%AC)
+* [쿠키와 세션 정리](https://github.com/brojoon/Webserv/wiki/%EC%BF%A0%ED%82%A4%EC%99%80-%EC%84%B8%EC%85%98-%EC%A0%95%EB%A6%AC)
 
 <!-- COLLABORATOR -->
 ## Collaborator
