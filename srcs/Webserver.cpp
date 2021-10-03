@@ -432,9 +432,7 @@ void Webserver::initWebServer()
 							////std::cout << "client socket read : " << i << std::endl;
 							port = ntohs(instance->client_sockets[i]);
 							client obj(i, port);
-							if (obj._flag[i] == false)
-								continue;
-							if (obj.isReadEnd() == true)
+							if (obj._flag[i] == false || obj.isReadEnd() == true)
 								continue;
 							std::pair<int, std::string> t = obj.get_response();
 							if (t.first == -1)
@@ -442,12 +440,8 @@ void Webserver::initWebServer()
 								//std::cout << "opne error" << std::endl;
 								removeOnSelect(i);
 								close(i);
-								if (fd_max == i)
-									fd_max--;
-								if (sock_msg.find(i) != sock_msg.end())
-									sock_msg.erase(i);
-								if (sock_body.find(i) != sock_body.end())
-									sock_body.erase(i);
+								sock_msg.erase(i);
+								sock_body.erase(i);
 								erase_file(t.first, files);
 								//std::cout << "opne error2" << std::endl;
 								continue;
@@ -520,12 +514,8 @@ void Webserver::initWebServer()
 							{
 								removeOnSelect(file);
 								close(file);
-								if (fd_max == file)
-									fd_max--;
 								removeOnSelect(socket);
 								close(socket);
-								if (fd_max == socket)
-									fd_max--;
 								sock_msg.erase(socket);
 								sock_body.erase(socket);
 								erase_file(file, files);
@@ -537,13 +527,9 @@ void Webserver::initWebServer()
 							{
 								removeOnSelect(file);
 								close(file);
-								if (fd_max == file)
-									fd_max--;
 								removeOnSelect(socket);
 								close(socket);
 								instance->client_sockets.erase(i);
-								if (fd_max == socket)
-									fd_max--;
 								sock_msg.erase(socket);
 								sock_body.erase(socket);
 								erase_file(file, files);
@@ -616,12 +602,8 @@ void Webserver::initWebServer()
 						{
 							removeOnSelect(file);
 							close(file);
-							if (fd_max == file)
-								fd_max--;
 							removeOnSelect(socket);
 							close(socket);
-							if (fd_max == socket)
-								fd_max--;
 							sock_msg.erase(socket);
 							sock_body.erase(socket);
 							erase_file(file, files);
@@ -638,13 +620,9 @@ void Webserver::initWebServer()
 						{
 							removeOnSelect(file);
 							close(file);
-							if (fd_max == file)
-								fd_max--;
 							removeOnSelect(socket);
 							close(socket);
 							instance->client_sockets.erase(socket);
-							if (fd_max == socket)
-								fd_max--;
 							sock_msg.erase(socket);
 							sock_body.erase(socket);
 							erase_file(file, files);
@@ -652,8 +630,6 @@ void Webserver::initWebServer()
 						}
 						FD_CLR(file, &instance->write_set);
 						close(file);
-						if (fd_max == file)
-							fd_max--;
 						erase_file(file, files);
 					}
 				}
