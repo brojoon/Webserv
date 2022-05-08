@@ -16,7 +16,7 @@ HTTP/1.1기준을 적용한 Custom HTTP 서버
 * [Request](https://github.com/brojoon/Webserv/wiki/Request-%EC%A0%95%EB%A6%AC)
 * [Response](https://github.com/brojoon/Webserv/wiki/Response-%EC%A0%95%EB%A6%AC)
 * [CGI](https://github.com/brojoon/Webserv/wiki/CGI-%EC%A0%95%EB%A6%AC)
-* [소켓 프로그래밍](https://github.com/brojoon/Webserv/wiki/%EC%86%8C%EC%BC%93-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D-%EC%A0%95%EB%A6%AC)
+* [소켓 프로그래밍](https://github.com/brojoon/Webserv/wiki/%EC%86%8C%EC%BC%93-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D)
 
 
 <!-- Siege_test -->
