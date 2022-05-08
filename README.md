@@ -1,5 +1,5 @@
 # 📒 Introduce
-HTTP/1.1기준을 적용한 Custom HTTP 
+HTTP/1.1기준을 적용한 Custom HTTP 서버
 
 실제 Nginx와 동작방식을 비교해가며 프로젝트를 진행 하였으며 select함수를 사용한 multiplexing이 적용되어 있습니다. 
 
