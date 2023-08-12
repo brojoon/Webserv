@@ -7,7 +7,7 @@ HTTP/1.1기준을 적용한 Custom HTTP 서버
 |김형준|최훈진|조영록|
 | :---: | :---: | :---: |
 |<img src=https://github.com/brojoon.png width=200 height=200 />|<img src=https://github.com/20151883.png width=200 height=200 />|<img src=https://github.com/oddczv1.png width=200 height=200 />|
-|[brojoon](https://github.com/brojoon)|[20151883](https://github.com/20151883)|[oddczv1](https://github.com/oddczv1)|
+|[brojoon](https://github.com/brojoon)|[hunjin-choi](https://github.com/hunjin-choi)|[oddczv1](https://github.com/oddczv1)|
 |Socket, config parsing|Request, Response|CGI, 테스트 자동화|
 
 <!-- Wiki -->
