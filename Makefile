@@ -17,7 +17,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	@echo Compiling $(NAME)
-	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
+	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS) -fsanitize=address
 
 %.o: %.cpp
 		$(CC) $(CFLAGS) -o $@ -c $<
